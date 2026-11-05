@@ -1,0 +1,18 @@
+{
+  "games": [
+    {
+      "slug": "zigzag",
+      "name": "zigzag",
+      "worker": "zigzag-site",
+      "alias": { "z": ["2"], "i": ["1"], "g": ["9"], "a": ["2", "0"] },
+      "blurb": {
+        "en": "Connect the numbers in order and fill every square.",
+        "zh": "按顺序连接数字，走遍每个格子。"
+      },
+      "hint": {
+        "en": "A path that turns left, then right, then left again.",
+        "zh": "一条左转、右转、再左转的路。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>play – small puzzle games</title>
+<meta name="description" content="A few small puzzle games, hidden behind their names.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='rgb(59,104,238)'/%3E%3Cg fill='white'%3E%3Ccircle cx='11' cy='11' r='3'/%3E%3Ccircle cx='21' cy='11' r='3'/%3E%3Ccircle cx='11' cy='21' r='3'/%3E%3Ccircle cx='21' cy='21' r='3'/%3E%3C/g%3E%3C/svg%3E">
+<script src="/lang.js"></script>
+<link rel="stylesheet" href="/portal.css">
+</head>
+<body>
+<!--
+  Games come from games.json (npm run build); every text is written twice, once per language:
+      <span lang="en">English</span><span lang="zh">中文</span>
+-->
+<header>
+  <span class="mark">play.vintoshine.com</span>
+  <div class="langs">
+    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+    <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+  </div>
+</header>
+<main>
+  <h1><span lang="en">Small games, hidden by name</span><span lang="zh">小游戏，藏在名字后面</span></h1>
+  <p class="lead">
+    <span lang="en">Letters drift across this page. Collect the ones that spell a game and its door opens.</span>
+    <span lang="zh">页面上飘着一些字符。收集拼成游戏名字的字符，门就会打开。</span>
+  </p>
+  <ul class="games">
+      {{TEASERS}}
+  </ul>
+  <noscript><p class="lead"><span lang="en">The games open with JavaScript turned on.</span><span lang="zh">需要开启 JavaScript 才能打开游戏。</span></p></noscript>
+  <div class="tools" id="tools" hidden>
+    <button type="button" id="pause" aria-pressed="false"><span lang="en">Pause letters</span><span lang="zh">暂停字符</span></button>
+    <details id="typed">
+      <summary><span lang="en">Know a name?</span><span lang="zh">知道名字？</span></summary>
+      <label>
+        <span class="sr" lang="en">Type a game name</span><span class="sr" lang="zh">输入游戏名字</span>
+        <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24">
+      </label>
+    </details>
+  </div>
+</main>
+<div id="sky"></div>
+<div class="bar" id="bar" hidden>
+  <div class="bar-in">
+    <div id="shelf" hidden></div>
+    <div class="row">
+      <div id="slots" role="group"></div>
+      <button type="button" id="clear"><span lang="en">Clear</span><span lang="zh">清空</span></button>
+    </div>
+  </div>
+</div>
+<p class="sr" id="status" role="status" aria-live="polite"></p>
+<script type="application/json" id="data">{{DATA}}</script>
+<script type="module" src="/portal.js"></script>
+</body>
+</html>
