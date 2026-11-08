@@ -18,7 +18,7 @@ for _ in $(seq 1 12); do   # a new version may need a moment at the edge
 done
 [ "$live" = "$sha" ] || fail "build.json shows '${live:-nothing}', expected $sha"
 
-for p in portal.js match.js lang.js portal.css; do
+for p in portal.js match.js lang.js theme.js portal.css; do
   fetch "$base/$p" > /dev/null || fail "/$p is not served"
 done
 fetch "$base/" | grep -q 'id="data"' || fail "the portal page has no data block"

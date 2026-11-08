@@ -24,7 +24,7 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev')
   };
   const teasers = games.map((g) => {
     const n = g.name.length;
-    return `<li class="game" data-id="${cardId(g.slug)}">
+    return `<li class="game" data-id="${cardId(g.slug)}" data-accent="${g.accent ?? '#3b68ee'}">
         <p class="slots"><span class="sr" lang="en">${n} letters</span><span class="sr" lang="zh">${n} 个字符</span>${
   '<span class="slot" aria-hidden="true"></span>'.repeat(n)}</p>
         <p class="blurb">${bi(g.blurb)}</p>
@@ -34,12 +34,13 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev')
   }).join('\n      ');
   const html = (await readFile(src('index.html'), 'utf8'))
     .replace('{{TEASERS}}', () => teasers)
+    .replaceAll('{{TOTAL}}', games.length)
     .replace('{{DATA}}', () => JSON.stringify(data).replaceAll('<', '\\u003c'));
 
   await rm(out, { recursive: true, force: true });
   await mkdir(out, { recursive: true });
   await writeFile(`${out}/index.html`, html);
-  for (const f of ['portal.js', 'match.js', 'lang.js', 'portal.css', '_headers']) {
+  for (const f of ['portal.js', 'match.js', 'lang.js', 'theme.js', 'portal.css', '_headers']) {
     await copyFile(src(f), `${out}/${f}`);
   }
   await writeFile(`${out}/.assetsignore`, '_headers\n');

@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { accepted, key, open, poolOf, seal } from '../src/match.js';
 import { build } from '../tools/build.js';
-import { binding, checkWrangler, load } from '../tools/manifest.js';
+import { binding, checkWrangler, contrastOnWhite, load } from '../tools/manifest.js';
 
 const zigzag = { name: 'zigzag', alias: { z: ['2'], i: ['1'], g: ['9'], a: ['2', '0'] } };
 const toml = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
@@ -50,7 +50,7 @@ test('the build seals every accepted set and never prints a name', async () => {
   const sets = games.reduce((n, g) => n + accepted(g.name, g.alias).size, 0);
   assert.equal(Object.keys(data.seals).length, sets);
   assert.deepEqual(readdirSync(out).sort(),
-    ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js']);
+    ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js', 'theme.js']);
   for (const g of games) {
     const re = new RegExp(`\\b${g.name}\\b`, 'i');
     for (const f of ['index.html', 'portal.js', 'match.js']) {
@@ -60,4 +60,9 @@ test('the build seals every accepted set and never prints a name', async () => {
     assert.equal(hit.u, `/${g.slug}/`);
     assert.equal(hit.n, g.name);
   }
+});
+
+test('accent contrast: blue passes, a light colour does not', () => {
+  assert.ok(contrastOnWhite('#3b68ee') >= 4.5);
+  assert.ok(contrastOnWhite('#ff9f1c') < 4.5);
 });

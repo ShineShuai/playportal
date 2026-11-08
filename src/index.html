@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>play – small puzzle games</title>
 <meta name="description" content="A few small puzzle games, hidden behind their names.">
+<meta name="theme-color" content="#f3f6ff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1530" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='rgb(59,104,238)'/%3E%3Cg fill='white'%3E%3Ccircle cx='11' cy='11' r='3'/%3E%3Ccircle cx='21' cy='11' r='3'/%3E%3Ccircle cx='11' cy='21' r='3'/%3E%3Ccircle cx='21' cy='21' r='3'/%3E%3C/g%3E%3C/svg%3E">
+<script src="/theme.js"></script>
 <script src="/lang.js"></script>
 <link rel="stylesheet" href="/portal.css">
 </head>
@@ -15,18 +18,25 @@
       <span lang="en">English</span><span lang="zh">中文</span>
 -->
 <header>
-  <span class="mark">play.vintoshine.com</span>
-  <div class="langs">
-    <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
-    <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><g><circle cx="11" cy="11" r="3"/><circle cx="21" cy="11" r="3"/><circle cx="11" cy="21" r="3"/><circle cx="21" cy="21" r="3"/></g></svg>
+  <div class="ctl">
+    <button type="button" class="icon" data-toggle-theme aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
+      <span class="sr" lang="en">Dark mode</span><span class="sr" lang="zh">深色模式</span>
+    </button>
+    <div class="langs">
+      <button type="button" data-set-lang="en" aria-pressed="false">EN</button>
+      <button type="button" data-set-lang="zh" aria-pressed="false">中文</button>
+    </div>
   </div>
 </header>
 <main>
-  <h1><span lang="en">Small games, hidden by name</span><span lang="zh">小游戏，藏在名字后面</span></h1>
+  <h1><span lang="en">Small games,<br>hidden by name</span><span lang="zh">小游戏，<br>藏在名字后面</span></h1>
   <p class="lead">
     <span lang="en">Letters drift across this page. Collect the ones that spell a game and its door opens.</span>
     <span lang="zh">页面上飘着一些字符。收集拼成游戏名字的字符，门就会打开。</span>
   </p>
+  <p class="count"><span lang="en">Found <b class="found">0</b> of {{TOTAL}}</span><span lang="zh">已找到 <b class="found">0</b> / {{TOTAL}}</span></p>
   <ul class="games">
       {{TEASERS}}
   </ul>

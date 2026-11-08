@@ -67,16 +67,28 @@ function miss() {
 }
 
 // ---- games ------------------------------------------------------------------------------
-function reveal({ i, n, u }, focus) {
+function reveal({ i, n, u }, fresh) {
   const li = $(`.game[data-id="${i}"]`);
   if (!li || !/^\/[a-z0-9-]+\/$/.test(u)) return;
   li.classList.add('open');
-  $('.slots', li).textContent = n;
+  li.classList.toggle('fresh', fresh);
+  const name = document.createElement('span');
+  name.className = 'sr';
+  name.textContent = n;
+  $('.slots', li).replaceChildren(name, ...[...n].map((c, k) => {
+    const l = document.createElement('span');
+    l.className = 'l';
+    l.setAttribute('aria-hidden', 'true');
+    l.textContent = c;
+    l.style.setProperty('--i', k);
+    return l;
+  }));
   $('.hint', li).hidden = true;
   const link = $('.play', li);
   link.href = u;
   link.hidden = false;
-  if (focus) link.focus();
+  document.querySelectorAll('.found').forEach((f) => { f.textContent = document.querySelectorAll('.game.open').length; });
+  if (fresh) link.focus();
 }
 
 function unlock(hit) {
@@ -106,7 +118,7 @@ function draw() {
 
 function laneX() { // outside the text column when there is room, anywhere on narrow screens
   const w = innerWidth;
-  const m = (w - Math.min(w, 38 * 16)) / 2;
+  const m = (w - Math.min(w, 46 * 16)) / 2; // 46rem: the page column
   if (m < 56) return rand(8, w - 56);
   return Math.random() < 0.5 ? rand(8, m - 48) : rand(w - m + 8, w - 56);
 }
@@ -157,6 +169,7 @@ function drawShelf() { // the same letters without motion: unlimited supply, one
 }
 
 // ---- start ------------------------------------------------------------------------------
+document.querySelectorAll('.game').forEach((li) => li.style.setProperty('--accent', li.dataset.accent));
 for (const hit of Object.values(unlocked)) reveal(hit, false);
 $('#bar').hidden = false;
 $('#tools').hidden = false;

@@ -4,6 +4,14 @@ import { accepted } from '../src/match.js';
 
 const root = new URL('../', import.meta.url);
 export const MAX_ACCEPTED = 400;
+/** Contrast ratio of a #rrggbb colour against white (the text on tiles and buttons). */
+export function contrastOnWhite(hex) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const c = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 1.05 / (0.2126 * r + 0.7152 * g + 0.0722 * b + 0.05);
+}
 export const binding = (slug) => `GAME_${slug.toUpperCase().replaceAll('-', '_')}`;
 
 export function load(file = new URL('games.json', root)) {
@@ -17,6 +25,10 @@ export function load(file = new URL('games.json', root)) {
     if (slugs.has(g.slug)) errors.push(`${at}: duplicate slug`);
     slugs.add(g.slug);
     if (!/^[a-z]{2,12}$/.test(g.name ?? '')) errors.push(`${at}: name must be 2-12 letters a-z`);
+    if (g.accent !== undefined) {
+      if (!/^#[0-9a-f]{6}$/i.test(g.accent)) errors.push(`${at}: accent must be #rrggbb`);
+      else if (contrastOnWhite(g.accent) < 4.5) errors.push(`${at}: accent needs contrast 4.5 with white text`);
+    }
     if (!g.worker) errors.push(`${at}: worker (the game's Worker name) is missing`);
     for (const field of ['blurb', 'hint']) {
       for (const lang of ['en', 'zh']) {

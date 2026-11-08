@@ -4,6 +4,7 @@
       "slug": "zigzag",
       "name": "zigzag",
       "worker": "zigzag-site",
+      "accent": "#3b68ee",
       "alias": { "z": ["2"], "i": ["1"], "g": ["9"], "a": ["2", "0"] },
       "blurb": {
         "en": "Connect the numbers in order and fill every square.",

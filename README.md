@@ -3,9 +3,9 @@
 Portal of <https://play.vintoshine.com/>: a brief page that hides a link to every game behind a
 small puzzle, plus the router that serves the games under `/<slug>/`.
 
-- `games.json`: the games (slug, name, Worker, aliases, blurb and hint in en/zh). The only file
+- `games.json`: the games (slug, name, Worker, optional `accent` colour #rrggbb with contrast 4.5 on white, aliases, blurb and hint in en/zh). The only file
   that lists games; no game repo carries portal data.
-- `src/`: page (`index.html`, `portal.js`, `portal.css`, `lang.js`), shared `match.js`, router `worker.js`.
+- `src/`: page (`index.html`, `portal.js`, `portal.css`, `lang.js`, `theme.js`), shared `match.js`, router `worker.js`.
 - `tools/build.js` writes `dist/`; `tools/manifest.js` validates `games.json` against `wrangler.toml`.
 - Games are separate Workers (own repo, own deploy) reached by service binding, so each keeps
   its own deploy rhythm. They live under `/<slug>/` of this host: same origin, so prefix every
