@@ -1,15 +1,32 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { mkdtempSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { accepted, key, open, poolOf, seal } from '../src/match.js';
+import { decode, fitOf, key, open, seal, tagSet } from '../src/match.js';
 import { build } from '../tools/build.js';
 import { binding, checkWrangler, contrastOnWhite, load } from '../tools/manifest.js';
+import { accepted, poolOf } from '../tools/seal.js';
 
 const zigzag = { name: 'zigzag', alias: { z: ['2'], i: ['1'], g: ['9'], a: ['2', '0'] } };
 const toml = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
+const out = mkdtempSync(join(tmpdir(), 'play-'));
+const { games, data } = await build(out, 'test'); // one build for the tests below
+
+/** Reference for the hint: maximum matching of tokens to distinct letters of the name. */
+function fitRef(tokens, { name, alias = {} }) {
+  const owner = Array(name.length).fill(-1);
+  const can = (t, j) => t === name[j] || (alias[name[j]] ?? []).includes(t);
+  const place = (i, seen) => {
+    for (let j = 0; j < name.length; j++) {
+      if (!can(tokens[i], j) || seen[j]) continue;
+      seen[j] = true;
+      if (owner[j] < 0 || place(owner[j], seen)) { owner[j] = i; return true; }
+    }
+    return false;
+  };
+  return tokens.reduce((n, _, i) => n + (place(i, []) ? 1 : 0), 0);
+}
 
 test('zigzag accepts the plain name and the digit forms', () => {
   const ok = accepted(zigzag.name, zigzag.alias);
@@ -22,44 +39,56 @@ test('zigzag accepts the plain name and the digit forms', () => {
 
 test('keys ignore order and case', () => assert.equal(key('ZiG'), key('gZi')));
 
-test('every accepted set has a letter or alias in the pool', () => {
-  const pool = new Set(poolOf([zigzag]));
-  for (const k of accepted(zigzag.name, zigzag.alias)) for (const t of k) assert.ok(pool.has(t), t);
+test('the hint table gives the same count as a maximum matching', async () => {
+  const tags = tagSet(data.tags);
+  const alphabet = [...'zigzag2190eorst8qx'];
+  let seed = 12345;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
+  for (let n = 0; n < 150; n++) {
+    const tray = Array.from({ length: 6 }, () => alphabet[Math.floor(rnd() * alphabet.length)]);
+    assert.equal(await fitOf(tray, tags), fitRef(tray, zigzag), tray.join(''));
+  }
+  assert.equal(await fitOf([...'zigzag'], tags), 6);
+  assert.equal(await fitOf([...'qqqqqq'], tags), 0);
 });
 
 test('seal and open round-trip; a wrong set opens nothing', async () => {
   const [id, ct] = await seal('aggizz', { u: '/zigzag/' });
   assert.deepEqual(await open('aggizz', { [id]: ct }), { u: '/zigzag/' });
   assert.equal(await open('aggizy', { [id]: ct }), null);
+  for (const k of ['aggizz', key('221gga')]) assert.equal((await open(k, data.seals)).u, '/zigzag/');
+});
+
+test('the pool is a shuffled bag with every needed token; clues decode', () => {
+  const pool = decode(data.pool);
+  assert.deepEqual([...pool].sort(), [...poolOf(games)].sort());
+  assert.notEqual(pool.slice(0, 6).join(''), 'zigzag');
+  assert.deepEqual(decode(Object.values(data.clues)[0]), games[0].hint);
 });
 
 test('games.json is valid and wrangler.toml matches it', () => {
-  const games = load();
-  assert.deepEqual(checkWrangler(games, toml), []);
+  assert.deepEqual(checkWrangler(load(), toml), []);
   assert.equal(binding('a-b'), 'GAME_A_B');
 });
 
 test('wrangler check reports a missing game', () => {
-  const g = [{ slug: 'x', worker: 'x-site' }];
-  assert.equal(checkWrangler(g, toml).length, 3);
+  assert.equal(checkWrangler([{ slug: 'x', worker: 'x-site' }], toml).length, 3);
 });
 
-test('the build seals every accepted set and never prints a name', async () => {
-  const out = mkdtempSync(join(tmpdir(), 'play-'));
-  const { games, data } = await build(out, 'test');
-  const sets = games.reduce((n, g) => n + accepted(g.name, g.alias).size, 0);
-  assert.equal(Object.keys(data.seals).length, sets);
+test('the build ships no plain answer: no name, link, hint or letter list', () => {
+  assert.deepEqual(Object.keys(data).sort(), ['clues', 'lens', 'pool', 'seals', 'tags']);
   assert.deepEqual(readdirSync(out).filter((f) => !f.startsWith('fonts')).sort(),
     ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js', 'theme.js']);
-  for (const g of games) {
-    const re = new RegExp(`\\b${g.name}\\b`, 'i');
-    for (const f of ['index.html', 'portal.js', 'match.js']) {
-      assert.ok(!re.test(readFileSync(join(out, f), 'utf8')), `${f} contains "${g.name}"`);
+  for (const f of readdirSync(out).filter((n) => /\.(html|js|css|json)$/.test(n))) {
+    const text = readFileSync(join(out, f), 'utf8');
+    for (const g of games) {
+      assert.ok(!new RegExp(`\\b${g.name}\\b`, 'i').test(text), `${f} contains "${g.name}"`);
+      assert.ok(!text.includes(`/${g.slug}/`), `${f} contains the link of ${g.slug}`);
+      assert.ok(!text.includes(g.hint.en) && !text.includes(g.hint.zh), `${f} contains a hint`);
+      assert.ok(!text.includes(poolOf([g]).join('')), `${f} contains the letter list`);
     }
-    const hit = await open(key(g.name), data.seals);
-    assert.equal(hit.u, `/${g.slug}/`);
-    assert.equal(hit.n, g.name);
   }
+  assert.ok(readFileSync(join(out, '_headers'), 'utf8').includes("default-src 'none'")); // no requests at all
 });
 
 test('accent contrast: blue passes, a light colour does not', () => {

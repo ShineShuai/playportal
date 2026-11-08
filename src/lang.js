@@ -1,4 +1,4 @@
-// Picks the language before the page is drawn. Same key and rule as the zigzag home page,
+// Picks the language before the page is drawn. Same key and rule as the game home pages,
 // so one choice holds on the whole host.
 (function () {
   var root = document.documentElement;

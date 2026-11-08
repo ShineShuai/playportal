@@ -1,32 +1,59 @@
-import { key, open } from './match.js';
+import { decode, fitOf, key, open, tagSet } from './match.js';
 
+// Static page, no requests: an answer exists here only as ciphertext, hashes or encoded text.
 const $ = (s, r = document) => r.querySelector(s);
 const data = JSON.parse($('#data').textContent);
+const pool = decode(data.pool);  // the letters that drift (a bag of them)
+const tags = tagSet(data.tags);  // hashes behind the "N of M fit" hint
 const MAX = Math.max(...data.lens);
 const EVERY = 1500;          // ms between new letters
 const SPEED = [26, 42];      // px/s a letter rises
 const DENSITY = 28000;       // px² of sky per letter on screen
 const TEXT = {
-  en: { unlocked: 'Unlocked: {n}', miss: 'No game matches. Letters cleared.', take: 'collect', drop: 'remove' },
-  zh: { unlocked: '已解锁：{n}', miss: '没有匹配的游戏，已清空。', take: '收集', drop: '移除' },
+  en: {
+    unlocked: 'Unlocked: {n}', take: 'collect', drop: 'remove', full: 'The row is full: remove a letter first.',
+    fit: '{k} of {n} letters fit · {m} to swap',
+  },
+  zh: {
+    unlocked: '已解锁：{n}', take: '收集', drop: '移除', full: '格子已满：请先移除一个字符。',
+    fit: '{n} 个中 {k} 个正确 · 需换 {m} 个',
+  },
 };
-const tx = (k, n = '') => (TEXT[document.documentElement.dataset.lang] ?? TEXT.en)[k].replace('{n}', n);
-const say = (k, n) => { $('#status').textContent = tx(k, n); };
+const tx = (k, v = {}) => (TEXT[document.documentElement.dataset.lang] ?? TEXT.en)[k]
+  .replace(/\{(\w+)\}/g, (_, x) => v[x] ?? '');
+const say = (text) => { $('#status').textContent = text; };
 const rand = (a, b) => a + Math.random() * (b - a);
 const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } },
 };
-
 const field = $('#field');
 const sky = $('#sky');
 let tray = [];  // collected letters: the only row of slots
 let trail = []; // where each collected letter was caught, in the same order (null: no position)
 let fails = 0;
-let locked = false;
 const unlocked = store.get('portal.unlocked', {});
 
-// ---- tray and trail -----------------------------------------------------------------------
+// ---- tray, trail and hint -----------------------------------------------------------------
+const hideFit = () => { $('#fit').hidden = true; };
+function showFit({ fit, of }) {
+  if (fit === undefined) return;
+  const text = tx('fit', { k: fit, n: of, m: of - fit });
+  $('#fit').textContent = text;
+  $('#fit').hidden = false;
+  say(text);
+}
+
+function shake() {
+  const bar = $('.bar');
+  bar.classList.remove('shake');
+  void bar.offsetWidth;
+  bar.classList.add('shake');
+}
+$('.bar').addEventListener('animationend', (e) => {
+  if (e.animationName === 'shake') e.currentTarget.classList.remove('shake');
+});
+
 function drawTray() {
   $('#slots').replaceChildren(...Array.from({ length: MAX }, (_, i) => {
     const full = i < tray.length;
@@ -37,9 +64,9 @@ function drawTray() {
       el.textContent = tray[i];
       el.setAttribute('aria-label', `${tray[i]}: ${tx('drop')}`);
       el.onclick = () => {
-        if (locked) return;
         tray.splice(i, 1);
         trail.splice(i, 1);
+        hideFit();
         drawTray();
         drawTrail();
       };
@@ -74,35 +101,48 @@ function clearAll() {
   drawTrail();
 }
 
+/** Do these letters open a game? A miss says how many of them fit. */
+async function guess(letters) {
+  const hit = await open(key(letters), data.seals);
+  if (hit) return { ok: true, hit };
+  const res = { ok: false, fit: await fitOf(letters, tags), of: letters.length };
+  showFit(res);
+  fails += 1;
+  shake();
+  if (fails >= 3) revealHints();
+  return res;
+}
+
 async function add(t, point = null) {
-  if (locked || tray.length >= MAX) return;
+  if (tray.length >= MAX) { say(tx('full')); shake(); return; }
+  hideFit();
   tray.push(t);
   trail.push(point);
   drawTray();
   drawTrail();
   const snap = tray.join('');
-  if (data.lens.includes(snap.length)) {
-    const hit = await open(key(snap), data.seals);
-    if (snap !== tray.join('')) return; // the tray changed while the key was derived
-    if (hit) { clearAll(); return unlock(hit); }
-  }
-  if (tray.length >= MAX) miss();
-}
-
-function miss() {
-  locked = true;
-  fails += 1;
-  say('miss');
-  $('.bar').classList.add('shake');
-  setTimeout(() => {
-    locked = false;
-    clearAll();
-    $('.bar').classList.remove('shake');
-  }, 600);
-  if (fails >= 3) document.querySelectorAll('.game:not(.open) .hint').forEach((h) => { h.hidden = false; });
+  if (!data.lens.includes(snap.length)) return;
+  const res = await guess(tray);
+  if (res?.ok && snap === tray.join('')) { clearAll(); unlock(res.hit); }
 }
 
 // ---- games ------------------------------------------------------------------------------
+function revealHints() { // the text clue is encoded in the page and decoded only now
+  for (const li of document.querySelectorAll('.game:not(.open)')) {
+    const el = $('.hint', li);
+    const clue = data.clues[li.dataset.id];
+    if (!el.hidden || !clue) continue;
+    const h = decode(clue);
+    el.replaceChildren(...['en', 'zh'].map((lang) => {
+      const s = document.createElement('span');
+      s.lang = lang;
+      s.textContent = h[lang];
+      return s;
+    }));
+    el.hidden = false;
+  }
+}
+
 function reveal({ i, n, u }, fresh) {
   const li = $(`.game[data-id="${i}"]`);
   if (!li || !/^\/[a-z0-9-]+\/$/.test(u)) return;
@@ -124,7 +164,7 @@ function unlock(hit) {
   unlocked[hit.i] = hit;
   store.set('portal.unlocked', unlocked);
   reveal(hit, true);
-  say('unlocked', hit.n);
+  say(tx('unlocked', { n: hit.n }));
 }
 
 // ---- drifting letters -------------------------------------------------------------------
@@ -134,9 +174,9 @@ let motionOff = store.get('portal.motion', 'on') === 'off';
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
 const capacity = () => Math.max(7, Math.min(16, Math.round((field.clientWidth * field.clientHeight) / DENSITY)));
 
-function draw() {
+function draw() { // a freshly shuffled bag: every needed letter turns up once per bag
   if (!bag.length) {
-    bag = [...data.pool];
+    bag = [...pool];
     for (let i = bag.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [bag[i], bag[j]] = [bag[j], bag[i]];
@@ -162,6 +202,7 @@ function spawn(early) {
     `--delay:${early ? -rand(0, life * 0.8) : 0}s;--from:${h + 10}px;--to:-50px;` +
     `--sway:${rand(6, 16)}px;--swt:${rand(4, 7)}s`;
   b.onclick = () => {
+    if (tray.length >= MAX) { say(tx('full')); shake(); return; } // keep the letter on the page
     const r = b.getBoundingClientRect();
     const f = field.getBoundingClientRect();
     const point = { x: r.left - f.left + r.width / 2, y: r.top - f.top + r.height / 2 };
@@ -185,8 +226,8 @@ function setMotion(off) {
   if (!motionOff) for (let i = 0; i < Math.ceil(capacity() * 0.7); i++) spawn(true);
 }
 
-function drawShelf() { // the same letters without motion: unlimited supply, one of each
-  $('#shelf').replaceChildren(...[...new Set(data.pool)].sort().map((t) => {
+function drawShelf() { // the same letters without motion: one button each, unlimited supply
+  $('#shelf').replaceChildren(...[...new Set(pool)].sort().map((t) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = t;
@@ -203,7 +244,7 @@ $('#bar').hidden = false;
 $('#tools').hidden = false;
 drawTray();
 drawShelf();
-$('#clear').onclick = () => { if (!locked) clearAll(); };
+$('#clear').onclick = () => { hideFit(); clearAll(); };
 $('#pause').onclick = () => {
   const off = $('#pause').getAttribute('aria-pressed') !== 'true';
   store.set('portal.motion', off ? 'off' : 'on');
@@ -213,8 +254,8 @@ reduce.addEventListener('change', () => setMotion(store.get('portal.motion', 'on
 $('#typed input').addEventListener('input', async (e) => {
   const t = [...e.target.value.toLowerCase().replace(/\s+/g, '')];
   if (!data.lens.includes(t.length)) return;
-  const hit = await open(key(t), data.seals);
-  if (hit) { e.target.value = ''; unlock(hit); }
+  const res = await guess(t);
+  if (res?.ok) { e.target.value = ''; unlock(res.hit); }
 });
 setMotion(motionOff);
 setInterval(() => spawn(false), EVERY);

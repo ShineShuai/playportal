@@ -79,6 +79,7 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
   background: var(--glass); border: 1px solid var(--line); box-shadow: var(--shadow);
   -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5);
 }
+.fit { margin: .6rem .25rem 0; font-size: .9rem; font-weight: 600; color: var(--ink); }
 .row { display: flex; gap: .75rem; align-items: center; }
 #slots { display: flex; gap: .35rem; flex: 1; min-width: 0; }
 #slots .slot {

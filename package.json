@@ -5,6 +5,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "build": "node tools/build.js",
+    "dev": "node tools/dev.js",
     "test": "node --test test/*.test.js"
   }
 }

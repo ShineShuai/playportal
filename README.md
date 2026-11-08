@@ -5,7 +5,7 @@ small puzzle, plus the router that serves the games under `/<slug>/`.
 
 - `games.json`: the games (slug, name, Worker, optional `accent` colour #rrggbb with contrast 4.5 on white, aliases, blurb and hint in en/zh). The only file
   that lists games; no game repo carries portal data.
-- `src/`: page (`index.html`, `portal.js`, `portal.css`, `lang.js`, `theme.js`), shared `match.js`, router `worker.js`.
+- `src/`: page (`index.html`, `portal.js`, `portal.css`, `lang.js`, `theme.js`), shared `match.js` (seal, open, hint) and the router `worker.js`; `tools/seal.js` builds the sealed data.
 - `tools/build.js` writes `dist/`; `tools/manifest.js` validates `games.json` against `wrangler.toml`.
 - Games are separate Workers (own repo, own deploy) reached by service binding, so each keeps
   its own deploy rhythm. They live under `/<slug>/` of this host: same origin, so prefix every
@@ -14,9 +14,16 @@ small puzzle, plus the router that serves the games under `/<slug>/`.
 ## How the puzzle works
 Letters (and look-alike digits, `alias` in `games.json`) drift over the page. Collecting a
 multiset of tokens that spells a game name opens it; typing the name does the same. Order does
-not matter. `npm run build` seals each game's link (AES-GCM, key from PBKDF2 of the token
-multiset) once per accepted multiset, so neither names nor links appear in the page source.
-This is discovery, not access control: `/<slug>/` stays public and shareable.
+not matter. The page is static and makes no requests (`default-src 'none'` in `src/_headers`).
+`npm run build` seals everything that is an answer:
+- the links: AES-GCM ciphertext, key from PBKDF2 of the token multiset, one entry per accepted multiset;
+- the hint "4 of 6 letters fit · 2 to swap": 5-byte hashes of every sub-multiset of every accepted
+  multiset (about 2 KB for zigzag; the build fails above 13000 hashes, so keep names short);
+- the letter pool and the text clues (shown after 3 misses): base64 only, in a shuffled order.
+  This is obfuscation: it keeps the answer out of a casual view-source, nothing more.
+The page never contains a name, link, hint text or the letters in name order (`npm test` checks).
+Letters are visible by design, as they float on the page. Trying all combinations offline can
+open the sealed links and the hash table; that is accepted. `/<slug>/` stays public.
 
 ## Layout and fonts
 PC (>= 900 px): text, the single row of slots (the tray) and tools in a left column; the sky of
@@ -40,7 +47,8 @@ cp node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.wof
 4. Push to `main`: tests, deploy, smoke test (the game must answer 200 through the portal).
 
 ## Develop
-`npm test` (Node 20 or 22), `npm run build`, then serve `dist/` with any static server.
+`npm test` (Node 20 or 22). `npm run dev` builds and serves `dist/` with the page's headers on
+<http://localhost:8080> (`PORT=...` to change); `/<slug>/` is not mounted there.
 
 ## Deploy (GitHub Actions, `.github/workflows/deploy.yml`)
 Every push to `main`. Rollback: revert the commit on `main`.

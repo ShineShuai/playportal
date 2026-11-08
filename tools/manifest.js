@@ -1,6 +1,6 @@
 // Reads and validates games.json (and its consistency with wrangler.toml).
 import { readFileSync } from 'node:fs';
-import { accepted } from '../src/match.js';
+import { accepted } from './seal.js';
 
 const root = new URL('../', import.meta.url);
 export const MAX_ACCEPTED = 400;

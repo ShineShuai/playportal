@@ -1,42 +1,22 @@
-// Shared by the build (Node) and the page (browser). A game opens when the collected tokens
-// form one of its accepted multisets; the link is sealed under a key derived from that multiset.
+// Shared by the build (Node) and the page (browser). It knows no answer: only how to seal and
+// open. In the page an answer exists only as ciphertext (the links), hashes (the hint table) and
+// encoded text (pool and clues; obfuscation, not secrecy).
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 export const SALT = 'play:v1';
 export const ITER = 100_000;
+export const TAG_BYTES = 5;
 
 export const key = (tokens) => [...tokens].map((t) => t.toLowerCase()).sort().join('');
-
-/** Every token multiset that spells `name`: a letter may be replaced by one of its aliases. */
-export function accepted(name, alias = {}) {
-  let sets = new Set(['']);
-  for (const ch of name) {
-    const next = new Set();
-    for (const s of sets) for (const o of [ch, ...(alias[ch] ?? [])]) next.add(key(s + o));
-    sets = next;
-  }
-  return sets;
-}
-
-/** What drifts over the page: every letter and every alias as often as it can be needed. */
-export function poolOf(games, decoys = 'eorst8') {
-  const pool = [];
-  for (const { name, alias = {} } of games) {
-    const count = {};
-    for (const ch of name) {
-      count[ch] = (count[ch] ?? 0) + 1;
-      pool.push(ch);
-    }
-    for (const [ch, list] of Object.entries(alias)) {
-      for (const t of list) pool.push(...Array(count[ch] ?? 1).fill(t));
-    }
-  }
-  return [...pool, ...decoys];
-}
-
-const hex = (b) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
-const b64 = (b) => btoa(String.fromCharCode(...b));
-const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+export const hex = (b) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
+export const b64 = (b) => {
+  let s = '';
+  for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode(...b.subarray(i, i + 8192));
+  return btoa(s);
+};
+export const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+export const encode = (value) => b64(enc.encode(JSON.stringify(value)));
+export const decode = (s) => JSON.parse(dec.decode(unb64(s)));
 
 async function derive(k) {
   const { subtle } = globalThis.crypto;
@@ -67,4 +47,34 @@ export async function open(k, seals) {
   } catch {
     return null;
   }
+}
+
+/** Short hash of a sorted token string (a sub-multiset of an answer). */
+export async function tag(k) {
+  const d = await globalThis.crypto.subtle.digest('SHA-256', enc.encode(`hint:${SALT}:${k}`));
+  return hex(new Uint8Array(d).subarray(0, TAG_BYTES));
+}
+
+/** The Set of tags carried by the page (concatenated TAG_BYTES hashes, base64). */
+export function tagSet(s) {
+  const b = unb64(s);
+  const set = new Set();
+  for (let i = 0; i + TAG_BYTES <= b.length; i += TAG_BYTES) set.add(hex(b.subarray(i, i + TAG_BYTES)));
+  return set;
+}
+
+/** How many of the tokens fit an answer: the size of the largest sub-multiset found in the table. */
+export async function fitOf(tokens, tags) {
+  const t = [...tokens].map((c) => c.toLowerCase()).sort();
+  const masks = Array.from({ length: (1 << t.length) - 1 }, (_, i) => i + 1);
+  const size = (m) => t.reduce((n, _, i) => n + ((m >> i) & 1), 0);
+  masks.sort((a, b) => size(b) - size(a));
+  const seen = new Set();
+  for (const m of masks) {
+    const k = t.filter((_, i) => (m >> i) & 1).join('');
+    if (seen.has(k)) continue;
+    seen.add(k);
+    if (tags.has(await tag(k))) return k.length;
+  }
+  return 0;
 }
