@@ -2,7 +2,7 @@
 // so one choice holds on the whole host.
 (function () {
   var root = document.documentElement;
-  var titles = { en: 'play \u2013 small puzzle games', zh: 'play \u2013 \u5c0f\u6e38\u620f' };
+  var titles = { en: 'Enter the playground', zh: '\u8fdb\u5165\u6e38\u4e50\u573a' };
   function setLanguage(language) {
     root.setAttribute('data-lang', language);
     root.setAttribute('lang', language === 'zh' ? 'zh-Hans' : 'en');

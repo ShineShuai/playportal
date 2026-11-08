@@ -1,5 +1,6 @@
 // Builds dist/: the page (teasers and sealed links from games.json), scripts, styles, headers.
-import { copyFile, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { pathToFileURL } from 'node:url';
 import { accepted, poolOf, seal } from '../src/match.js';
@@ -25,16 +26,18 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev')
   const teasers = games.map((g) => {
     const n = g.name.length;
     return `<li class="game" data-id="${cardId(g.slug)}" data-accent="${g.accent ?? '#3b68ee'}">
-        <p class="slots"><span class="sr" lang="en">${n} letters</span><span class="sr" lang="zh">${n} 个字符</span>${
-  '<span class="slot" aria-hidden="true"></span>'.repeat(n)}</p>
         <p class="blurb">${bi(g.blurb)}</p>
+        <p class="meta"><span lang="en">${n} letters</span><span lang="zh">${n} 个字符</span></p>
         <p class="hint" hidden>${bi(g.hint)}</p>
         <a class="play" hidden><span lang="en">Play</span><span lang="zh">开始玩</span></a>
       </li>`;
   }).join('\n      ');
+  // Optional self-hosted variable fonts: src/fonts/<family>.woff2 (e.g. unbounded, manrope)
+  const fontFiles = existsSync(src('fonts/')) ? (await readdir(src('fonts/'))).filter((f) => f.endsWith('.woff2')).sort() : [];
   const html = (await readFile(src('index.html'), 'utf8'))
     .replace('{{TEASERS}}', () => teasers)
     .replaceAll('{{TOTAL}}', games.length)
+    .replace('{{FONTS}}', fontFiles.length ? '<link rel="stylesheet" href="/fonts.css">' : '')
     .replace('{{DATA}}', () => JSON.stringify(data).replaceAll('<', '\\u003c'));
 
   await rm(out, { recursive: true, force: true });
@@ -42,6 +45,16 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev')
   await writeFile(`${out}/index.html`, html);
   for (const f of ['portal.js', 'match.js', 'lang.js', 'theme.js', 'portal.css', '_headers']) {
     await copyFile(src(f), `${out}/${f}`);
+  }
+  if (fontFiles.length) {
+    await mkdir(`${out}/fonts`);
+    let css = '';
+    for (const f of fontFiles) {
+      await copyFile(src(`fonts/${f}`), `${out}/fonts/${f}`);
+      const family = f.replace('.woff2', '').replace(/^./, (c) => c.toUpperCase());
+      css += `@font-face{font-family:"${family}";src:url(/fonts/${f}) format("woff2");font-weight:200 900;font-display:swap}\n`;
+    }
+    await writeFile(`${out}/fonts.css`, css);
   }
   await writeFile(`${out}/.assetsignore`, '_headers\n');
   await writeFile(`${out}/build.json`, `${JSON.stringify({ sha, built: new Date().toISOString() })}\n`);

@@ -18,6 +18,20 @@ not matter. `npm run build` seals each game's link (AES-GCM, key from PBKDF2 of 
 multiset) once per accepted multiset, so neither names nor links appear in the page source.
 This is discovery, not access control: `/<slug>/` stays public and shareable.
 
+## Layout and fonts
+PC (>= 900 px): text, the single row of slots (the tray) and tools in a left column; the sky of
+letters fills the right side. Mobile: text on top, sky in the middle, tools, tray fixed at the
+bottom. Letters caught in the sky become stars joined in click order; nothing is joined before.
+Light and dark follow the system (toggle saved as `portal.theme`).
+
+Optional self-hosted variable fonts (SIL OFL), used when the files exist, else system fonts:
+```
+npm i --no-save @fontsource-variable/unbounded @fontsource-variable/manrope
+mkdir -p src/fonts
+cp node_modules/@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2 src/fonts/unbounded.woff2
+cp node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2 src/fonts/manrope.woff2
+```
+
 ## Add a game
 1. The game deploys as its own Worker with `workers_dev = false`, assets under `<slug>/`.
 2. `games.json`: new entry. The blurb and hint must not contain the name (tested).

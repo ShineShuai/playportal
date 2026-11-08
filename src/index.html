@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>play – small puzzle games</title>
-<meta name="description" content="A few small puzzle games, hidden behind their names.">
+<title>Enter the playground</title>
+<meta name="description" content="A playground of small games. Catch the letters to find the way in.">
 <meta name="theme-color" content="#f3f6ff" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1530" media="(prefers-color-scheme: dark)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='rgb(59,104,238)'/%3E%3Cg fill='white'%3E%3Ccircle cx='11' cy='11' r='3'/%3E%3Ccircle cx='21' cy='11' r='3'/%3E%3Ccircle cx='11' cy='21' r='3'/%3E%3Ccircle cx='21' cy='21' r='3'/%3E%3C/g%3E%3C/svg%3E">
+<meta name="theme-color" content="#0a0f2c" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='rgb(10,15,44)'/%3E%3Cpath d='M7 22 13 11 19 21 25 9' fill='none' stroke='rgb(255,180,84)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 <script src="/theme.js"></script>
 <script src="/lang.js"></script>
+{{FONTS}}
 <link rel="stylesheet" href="/portal.css">
 </head>
 <body>
@@ -18,7 +19,6 @@
       <span lang="en">English</span><span lang="zh">中文</span>
 -->
 <header>
-  <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9"/><g><circle cx="11" cy="11" r="3"/><circle cx="21" cy="11" r="3"/><circle cx="11" cy="21" r="3"/><circle cx="21" cy="21" r="3"/></g></svg>
   <div class="ctl">
     <button type="button" class="icon" data-toggle-theme aria-pressed="false">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 4a8 8 0 0 0 0 16z" fill="currentColor"/></svg>
@@ -31,16 +31,23 @@
   </div>
 </header>
 <main>
-  <h1><span lang="en">Small games,<br>hidden by name</span><span lang="zh">小游戏，<br>藏在名字后面</span></h1>
+  <h1><span lang="en">Enter the playground</span><span lang="zh">进入游乐场</span></h1>
   <p class="lead">
-    <span lang="en">Letters drift across this page. Collect the ones that spell a game and its door opens.</span>
-    <span lang="zh">页面上飘着一些字符。收集拼成游戏名字的字符，门就会打开。</span>
+    <span lang="en">Catch the drifting letters. Spell a game’s name to open its door.</span>
+    <span lang="zh">抓住飘动的字符，拼出游戏的名字，门就会打开。</span>
   </p>
   <p class="count"><span lang="en">Found <b class="found">0</b> of {{TOTAL}}</span><span lang="zh">已找到 <b class="found">0</b> / {{TOTAL}}</span></p>
   <ul class="games">
       {{TEASERS}}
   </ul>
   <noscript><p class="lead"><span lang="en">The games open with JavaScript turned on.</span><span lang="zh">需要开启 JavaScript 才能打开游戏。</span></p></noscript>
+  <div class="bar" id="bar" hidden>
+    <div id="shelf" hidden></div>
+    <div class="row">
+      <div id="slots" role="group"></div>
+      <button type="button" id="clear"><span lang="en">Clear</span><span lang="zh">清空</span></button>
+    </div>
+  </div>
   <div class="tools" id="tools" hidden>
     <button type="button" id="pause" aria-pressed="false"><span lang="en">Pause letters</span><span lang="zh">暂停字符</span></button>
     <details id="typed">
@@ -51,17 +58,8 @@
       </label>
     </details>
   </div>
+  <div id="field"><svg id="trail" aria-hidden="true"></svg><div id="sky"></div></div>
 </main>
-<div id="sky"></div>
-<div class="bar" id="bar" hidden>
-  <div class="bar-in">
-    <div id="shelf" hidden></div>
-    <div class="row">
-      <div id="slots" role="group"></div>
-      <button type="button" id="clear"><span lang="en">Clear</span><span lang="zh">清空</span></button>
-    </div>
-  </div>
-</div>
 <p class="sr" id="status" role="status" aria-live="polite"></p>
 <script type="application/json" id="data">{{DATA}}</script>
 <script type="module" src="/portal.js"></script>

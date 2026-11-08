@@ -49,7 +49,7 @@ test('the build seals every accepted set and never prints a name', async () => {
   const { games, data } = await build(out, 'test');
   const sets = games.reduce((n, g) => n + accepted(g.name, g.alias).size, 0);
   assert.equal(Object.keys(data.seals).length, sets);
-  assert.deepEqual(readdirSync(out).sort(),
+  assert.deepEqual(readdirSync(out).filter((f) => !f.startsWith('fonts')).sort(),
     ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js', 'theme.js']);
   for (const g of games) {
     const re = new RegExp(`\\b${g.name}\\b`, 'i');
