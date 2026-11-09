@@ -51,15 +51,13 @@
   </div>
   <div class="tools" id="tools" hidden>
     <button type="button" id="pause" aria-pressed="false"><span lang="en">Pause letters</span><span lang="zh">暂停字符</span></button>
-    <details id="typed">
-      <summary><span lang="en">Know a name?</span><span lang="zh">知道名字？</span></summary>
-      <label>
-        <span class="sr" lang="en">Type a game name</span><span class="sr" lang="zh">输入游戏名字</span>
-        <input type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24">
-      </label>
-    </details>
+    <div class="namebox">
+      <button type="button" id="know" aria-expanded="false" aria-controls="name"><span lang="en">Know a name?</span><span lang="zh">知道名字？</span></button>
+      <label class="sr" for="name"><span lang="en">Type a game name</span><span lang="zh">输入游戏名字</span></label>
+      <input id="name" type="text" hidden autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24">
+    </div>
   </div>
-  <div id="field"><svg id="trail" aria-hidden="true"></svg><div id="sky"></div></div>
+  <div id="field"><svg id="trail" aria-hidden="true"></svg><div id="sky"></div><div id="picks"></div></div>
 </main>
 <p class="sr" id="status" role="status" aria-live="polite"></p>
 <script type="application/json" id="data">{{DATA}}</script>

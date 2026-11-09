@@ -30,7 +30,7 @@ const store = {
 const field = $('#field');
 const sky = $('#sky');
 let tray = [];  // collected letters: the only row of slots
-let trail = []; // where each collected letter was caught, in the same order (null: no position)
+let trail = []; // the caught letters that stay in the sky {x, y, el}, in tray order (null: none)
 let fails = 0;
 const unlocked = store.get('portal.unlocked', {});
 
@@ -63,13 +63,7 @@ function drawTray() {
       el.type = 'button';
       el.textContent = tray[i];
       el.setAttribute('aria-label', `${tray[i]}: ${tx('drop')}`);
-      el.onclick = () => {
-        tray.splice(i, 1);
-        trail.splice(i, 1);
-        hideFit();
-        drawTray();
-        drawTrail();
-      };
+      el.onclick = () => removeAt(i);
     }
     return el;
   }));
@@ -82,19 +76,41 @@ function node(tag, attrs) {
   return n;
 }
 
-/** Stars where letters were caught, joined in click order: nothing is joined before a click. */
+/** The caught letters, joined in click order: nothing is joined before a click. */
 function drawTrail() {
   const pts = trail.filter(Boolean);
-  const els = [];
-  if (pts.length > 1) els.push(node('polyline', { class: 'line', points: pts.map((p) => `${p.x},${p.y}`).join(' ') }));
-  pts.forEach((p, i) => els.push(
-    node('circle', { class: 'halo', cx: p.x, cy: p.y, r: 16 }),
-    node('circle', { class: i === pts.length - 1 ? 'star new' : 'star', cx: p.x, cy: p.y, r: 4.5 }),
-  ));
-  $('#trail').replaceChildren(...els);
+  $('#trail').replaceChildren(...(pts.length > 1
+    ? [node('polyline', { class: 'line', points: pts.map((p) => `${p.x},${p.y}`).join(' ') })]
+    : []));
+}
+
+/** A caught letter stays where it was caught, lit, and clicking it takes it back out of the row. */
+function pin(t, glyph) {
+  const f = field.getBoundingClientRect();
+  const x = glyph.left - f.left + glyph.width / 2;
+  const y = glyph.top - f.top + glyph.height / 2;
+  const el = document.createElement('button');
+  el.type = 'button';
+  el.className = 'pick';
+  el.textContent = t;
+  el.setAttribute('aria-label', `${t}: ${tx('drop')}`);
+  el.style.cssText = `left:${x}px;top:${y}px`;
+  el.onclick = () => removeAt(trail.findIndex((p) => p?.el === el));
+  $('#picks').append(el);
+  return { x, y, el };
+}
+
+function removeAt(i) {
+  if (i < 0) return;
+  tray.splice(i, 1);
+  trail.splice(i, 1).forEach((p) => p?.el.remove());
+  hideFit();
+  drawTray();
+  drawTrail();
 }
 
 function clearAll() {
+  trail.forEach((p) => p?.el.remove());
   tray = [];
   trail = [];
   drawTray();
@@ -203,9 +219,7 @@ function spawn(early) {
     `--sway:${rand(6, 16)}px;--swt:${rand(4, 7)}s`;
   b.onclick = () => {
     if (tray.length >= MAX) { say(tx('full')); shake(); return; } // keep the letter on the page
-    const r = b.getBoundingClientRect();
-    const f = field.getBoundingClientRect();
-    const point = { x: r.left - f.left + r.width / 2, y: r.top - f.top + r.height / 2 };
+    const point = pin(t, s.getBoundingClientRect()); // where the letter is drawn right now
     const next = document.activeElement === b ? b.nextElementSibling ?? sky.firstElementChild : null;
     b.remove();
     live -= 1;
@@ -251,7 +265,16 @@ $('#pause').onclick = () => {
   setMotion(off);
 };
 reduce.addEventListener('change', () => setMotion(store.get('portal.motion', 'on') === 'off'));
-$('#typed input').addEventListener('input', async (e) => {
+const know = $('#know');
+const name = $('#name');
+const toggleName = (show) => {
+  name.hidden = !show;
+  know.setAttribute('aria-expanded', String(show));
+  if (show) name.focus();
+};
+know.onclick = () => toggleName(name.hidden);
+name.addEventListener('keydown', (e) => { if (e.key === 'Escape') { toggleName(false); know.focus(); } });
+name.addEventListener('input', async (e) => {
   const t = [...e.target.value.toLowerCase().replace(/\s+/g, '')];
   if (!data.lens.includes(t.length)) return;
   const res = await guess(t);

@@ -33,14 +33,14 @@ button { font: inherit; color: inherit; cursor: pointer; }
 header { position: relative; z-index: 12; display: flex; justify-content: flex-end; padding: 1.25rem 1.25rem 0; }
 .ctl { display: flex; gap: .5rem; align-items: center; }
 .langs { display: flex; gap: .25rem; padding: .2rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--glass); }
-.langs button, .icon, #clear, #pause {
+.langs button, .icon, #clear, #pause, #know {
   background: none; border: 1px solid transparent; border-radius: .6rem; padding: .3rem .7rem; min-height: 2.75rem;
   color: var(--muted); transition: background .15s, color .15s, border-color .15s;
 }
 .icon { display: grid; place-items: center; width: 2.75rem; padding: 0; border-color: var(--line); background: var(--glass); }
 .icon svg { width: 1.25rem; height: 1.25rem; }
 .langs button[aria-pressed="true"] { background: var(--blue); color: #fff; }
-.langs button:hover:not([aria-pressed="true"]), .icon:hover, #clear:hover, #pause:hover { color: var(--ink); border-color: var(--line-strong); }
+.langs button:hover:not([aria-pressed="true"]), .icon:hover, #clear:hover, #pause:hover, #know:hover { color: var(--ink); border-color: var(--line-strong); }
 main {
   flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 34rem; margin: 0 auto;
   padding: 0 1.25rem 7.5rem;
@@ -70,7 +70,7 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
   box-shadow: 0 12px 28px -12px var(--accent); transition: transform .15s;
 }
 .play:hover { transform: translateY(-2px); }
-.play:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
+.play:focus-visible, button:focus-visible, input:focus-visible {
   outline: 3px solid var(--orange); outline-offset: 2px;
 }
 .bar {
@@ -95,9 +95,10 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
 }
 .tools { order: 2; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-top: 1rem; color: var(--muted); }
 #pause { border-color: var(--line); background: var(--glass); }
-summary { cursor: pointer; padding: .6rem 0; }
-input {
-  margin-top: .4rem; font: 600 1.1rem var(--display); padding: .6rem .8rem; width: 15rem; max-width: 100%;
+.namebox { display: flex; align-items: center; gap: .5rem; }
+#know { border-color: var(--line); background: var(--glass); }
+#name {
+  width: 9.5rem; max-width: 100%; margin: 0; padding: .55rem .8rem; font: 600 1rem var(--display);
   border: 1px solid var(--line-strong); border-radius: .7rem; background: var(--surface); color: var(--ink);
 }
 #field {
@@ -107,9 +108,15 @@ input {
 }
 #sky, #trail { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .line { fill: none; stroke: var(--star); stroke-opacity: .55; stroke-width: 1.5; }
-.halo { fill: var(--star); fill-opacity: .16; }
-.star { fill: var(--star); }
-.new { animation: fade .3s ease-out; }
+#picks { position: absolute; inset: 0; pointer-events: none; }
+.pick {
+  position: absolute; transform: translate(-50%, -50%); pointer-events: auto; width: 2.75rem; height: 2.75rem;
+  display: grid; place-items: center; padding: 0; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--star) 50%, transparent);
+  background: color-mix(in srgb, var(--star) 14%, transparent);
+  font: 700 1.6rem/1 var(--display); color: var(--star);
+  text-shadow: 0 0 .7em color-mix(in srgb, var(--star) 80%, transparent); animation: fade .3s ease-out;
+}
 .ch {
   position: absolute; top: 0; pointer-events: auto; padding: .5rem .6rem; border: 0; background: none;
   font: 600 1.6rem/1 var(--display); color: var(--star); opacity: .5;
@@ -137,6 +144,6 @@ input {
 }
 @media (prefers-reduced-motion: reduce) {
   #sky { display: none; }
-  .shake, .fresh .name, #slots button.slot, .new { animation: none; }
+  .shake, .fresh .name, #slots button.slot, .pick { animation: none; }
   .play { transition: none; }
 }
