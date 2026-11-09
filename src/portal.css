@@ -1,9 +1,15 @@
 :root {
   color-scheme: light;
-  --page: #f3f6ff; --surface: #fff; --ink: #0e1634; --text: #2a3556; --muted: #566282;
-  --line: #dbe3f8; --line-strong: #b4c2ee; --blue: #3b68ee; --blue-text: #2f56d4; --blue-soft: #e6ecff;
-  --star: #cf6a00; --orange: #ff9f1c; --glass: rgba(255, 255, 255, .86);
-  --shadow: 0 24px 50px -28px rgba(30, 50, 120, .4); --glow: 20%; --gx: 50%; --gy: 58%;
+  /* Daybreak: a day sky. Free letters are cool, caught letters and the row's tiles are warm. */
+  --page: #e9f2ff; --surface: #fff; --ink: #11204d; --text: #2b3a6e; --muted: #4d5c88;
+  --line: rgba(17, 32, 77, .16); --line-strong: rgba(17, 32, 77, .34);
+  --blue: #3b68ee; --blue-text: #2f56d4; --blue-soft: #e6ecff; --orange: #ff9f1c;
+  --free: #2d3f9e; --star: #d9481f; --tile: #d9481f; --tilebg: rgba(217, 72, 31, .12); --name: #d9481f;
+  --on: #11204d; --focus: #11204d; --glass: rgba(255, 255, 255, .72);
+  --shadow: 0 24px 50px -28px rgba(17, 32, 77, .45); --glow: 20%; --gx: 50%; --gy: 58%;
+  --ground:
+    radial-gradient(40rem 34rem at 100% 100%, rgba(255, 170, 120, .55), transparent 70%),
+    linear-gradient(160deg, #bfdcff 0%, #e9f2ff 45%, #ffe3cf 100%);
   --display: Unbounded, ui-rounded, "SF Pro Rounded", system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
   --body: Manrope, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
 }
@@ -11,7 +17,11 @@
   color-scheme: dark;
   --page: #0a0f2c; --surface: #141a45; --ink: #fff; --text: #e9ecff; --muted: #b4bcec;
   --line: #ffffff24; --line-strong: #ffffff44; --blue-text: #8aa8ff; --blue-soft: #26307a;
-  --star: #ffb454; --glass: rgba(20, 26, 69, .9); --shadow: 0 20px 50px -20px #000; --glow: 34%;
+  --free: #ffb454; --star: #ffb454; --tile: #8aa8ff; --tilebg: #26307a; --name: #8aa8ff;
+  --on: #3b68ee; --focus: #ff9f1c; --glass: rgba(20, 26, 69, .9); --shadow: 0 20px 50px -20px #000; --glow: 34%;
+  --ground:
+    radial-gradient(48rem 48rem at var(--gx) var(--gy), color-mix(in srgb, var(--blue) var(--glow), transparent), transparent 68%),
+    radial-gradient(44rem 32rem at 104% 104%, color-mix(in srgb, var(--orange) calc(var(--glow) * .6), transparent), transparent 70%);
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -23,9 +33,7 @@ body {
 }
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(48rem 48rem at var(--gx) var(--gy), color-mix(in srgb, var(--blue) var(--glow), transparent), transparent 68%),
-    radial-gradient(44rem 32rem at 104% 104%, color-mix(in srgb, var(--orange) calc(var(--glow) * .6), transparent), transparent 70%);
+  background: var(--ground);
 }
 html[data-lang="en"] [lang="zh"], html[data-lang="zh"] [lang="en"] { display: none; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -39,7 +47,7 @@ header { position: relative; z-index: 12; display: flex; justify-content: flex-e
 }
 .icon { display: grid; place-items: center; width: 2.75rem; padding: 0; border-color: var(--line); background: var(--glass); }
 .icon svg { width: 1.25rem; height: 1.25rem; }
-.langs button[aria-pressed="true"] { background: var(--blue); color: #fff; }
+.langs button[aria-pressed="true"] { background: var(--on); color: #fff; }
 .langs button:hover:not([aria-pressed="true"]), .icon:hover, #clear:hover, #pause:hover, #know:hover { color: var(--ink); border-color: var(--line-strong); }
 main {
   flex: 1; display: flex; flex-direction: column; width: 100%; max-width: 34rem; margin: 0 auto;
@@ -54,6 +62,7 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
 .count {
   align-self: flex-start; margin: .9rem 0 0; padding: .25rem .9rem; border: 1px solid var(--line-strong);
   border-radius: 99px; font-size: .875rem; color: var(--muted);
+  background: color-mix(in srgb, var(--surface) 55%, transparent);
 }
 .count b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .games { list-style: none; margin: 1.25rem 0 0; padding: 0; }
@@ -61,7 +70,7 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
 .game p { margin: 0; }
 .blurb { color: var(--ink); font-size: 1.15rem; font-weight: 600; }
 .meta { margin-top: .25rem !important; color: var(--muted); font-size: .875rem; }
-.name { display: block; color: var(--blue-text); font: 700 1.6rem / 1.3 var(--display); }
+.name { display: block; color: var(--name); font: 700 1.6rem / 1.3 var(--display); }
 .fresh .name { animation: fade .6s ease-out; }
 .hint { margin-top: .25rem !important; color: var(--muted); }
 .play {
@@ -71,7 +80,7 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
 }
 .play:hover { transform: translateY(-2px); }
 .play:focus-visible, button:focus-visible, input:focus-visible {
-  outline: 3px solid var(--orange); outline-offset: 2px;
+  outline: 3px solid var(--focus); outline-offset: 2px;
 }
 .bar {
   position: fixed; left: 0; right: 0; margin: 0 auto; z-index: 10; width: min(40rem, calc(100% - 1.5rem));
@@ -87,11 +96,11 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
   border: 1.5px dashed var(--line-strong); border-radius: .8rem; background: none;
   font: 700 1.1rem var(--display); color: var(--ink);
 }
-#slots button.slot { border: 1.5px solid var(--blue-text); background: var(--blue-soft); animation: pop .2s ease-out; }
+#slots button.slot { border: 1.5px solid var(--tile); background: var(--tilebg); animation: pop .2s ease-out; }
 #shelf { display: flex; flex-wrap: wrap; gap: .35rem; margin-bottom: .6rem; }
 #shelf button {
   min-width: 2.75rem; height: 2.75rem; border: 1px solid var(--line-strong); border-radius: .7rem;
-  background: var(--surface); font: 700 1.1rem var(--display); color: var(--star);
+  background: var(--surface); font: 700 1.1rem var(--display); color: var(--free);
 }
 .tools { order: 2; display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; margin-top: 1rem; color: var(--muted); }
 #pause { border-color: var(--line); background: var(--glass); }
@@ -119,8 +128,8 @@ html[data-lang="zh"] h1 { letter-spacing: 0; line-height: 1.2; }
 }
 .ch {
   position: absolute; top: 0; pointer-events: auto; padding: .5rem .6rem; border: 0; background: none;
-  font: 600 1.6rem/1 var(--display); color: var(--star); opacity: .5;
-  text-shadow: 0 0 .7em color-mix(in srgb, var(--star) 65%, transparent);
+  font: 600 1.6rem/1 var(--display); color: var(--free); opacity: .5;
+  text-shadow: 0 0 .7em color-mix(in srgb, var(--free) 65%, transparent);
   animation: rise var(--life) linear var(--delay) both; will-change: transform;
 }
 .ch > span { display: block; animation: sway var(--swt) ease-in-out infinite alternate; }
