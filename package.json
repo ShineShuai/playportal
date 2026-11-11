@@ -6,6 +6,7 @@
   "scripts": {
     "build": "node tools/build.js",
     "dev": "node tools/dev.js",
+    "fonts": "node tools/fonts.js",
     "test": "node --test test/*.test.js"
   }
 }

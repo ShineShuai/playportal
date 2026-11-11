@@ -8,7 +8,9 @@
 <meta name="theme-color" content="#e9f2ff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0a0f2c" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='rgb(10,15,44)'/%3E%3Cpath d='M7 22 13 11 19 21 25 9' fill='none' stroke='rgb(255,180,84)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<script type="application/json" id="styles">{{STYLES}}</script>
 <script src="/theme.js"></script>
+<script src="/style.js"></script>
 <script src="/lang.js"></script>
 {{FONTS}}
 <link rel="stylesheet" href="/portal.css">
@@ -31,12 +33,15 @@
   </div>
 </header>
 <main>
-  <h1><span lang="en">Enter the playground</span><span lang="zh">进入游乐场</span></h1>
-  <p class="lead">
-    <span lang="en">Catch the drifting letters. Spell a game’s name to open its door.</span>
-    <span lang="zh">抓住飘动的字符，拼出游戏的名字，门就会打开。</span>
-  </p>
-  <p class="count"><span lang="en">Found <b class="found">0</b> of {{TOTAL}}</span><span lang="zh">已找到 <b class="found">0</b> / {{TOTAL}}</span></p>
+  <section class="intro">
+    <div id="decor-head"></div>
+    <h1><span lang="en"><span class="w1">Enter the</span> <span class="w2">playground</span></span><span lang="zh">进入游乐场</span></h1>
+    <p class="lead">
+      <span lang="en">Catch the drifting letters. Spell a game’s name to open its door.</span>
+      <span lang="zh">抓住飘动的字符，拼出游戏的名字，门就会打开。</span>
+    </p>
+    <p class="count"><span lang="en">Found <b class="found">0</b> of {{TOTAL}}</span><span lang="zh">已找到 <b class="found">0</b> / {{TOTAL}}</span></p>
+  </section>
   <ul class="games">
       {{TEASERS}}
   </ul>
@@ -57,8 +62,9 @@
       <input id="name" type="text" hidden autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24">
     </div>
   </div>
-  <div id="field"><svg id="trail" aria-hidden="true"></svg><div id="sky"></div><div id="picks"></div></div>
+  <div id="field"><div id="decor-field" aria-hidden="true"></div><svg id="trail" aria-hidden="true"></svg><div id="sky"></div><div id="picks"></div></div>
 </main>
+{{DECOR}}
 <p class="sr" id="status" role="status" aria-live="polite"></p>
 <script type="application/json" id="data">{{DATA}}</script>
 <script type="module" src="/portal.js"></script>

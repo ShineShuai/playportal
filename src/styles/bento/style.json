@@ -1,0 +1,7 @@
+{
+  "id": "bento",
+  "name": "Bento",
+  "themeColor": { "light": "#eef0f5", "dark": "#140e0c" },
+  "motion": { "type": "rise" },
+  "fonts": ["sora", "manrope"]
+}

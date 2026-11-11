@@ -1,0 +1,56 @@
+/* Tile garden: a saturated colour panel, white tiles with coloured edges, one hue per letter. */
+:root {
+  --page: #f4f6fb; --surface: #fff; --ink: #141833; --text: #343a63; --muted: #565d86;
+  --line: rgba(20, 24, 51, .12); --line-strong: rgba(20, 24, 51, .3);
+  --star: #141833; --tile: #2f4bff; --tilebg: rgba(47, 75, 255, .1); --name: #2f4bff;
+  --on: #141833; --on-fg: #fff; --focus: #141833; --glass: rgba(255, 255, 255, .88); --shadow: 0 30px 60px -32px rgba(47, 75, 255, .45);
+  --free: #141833; --panel: #2f4bff; --card: #fff; --fill: #fff; --fg: #141833;
+  --k0: #ff8a00; --k1: #ff3d8b; --k2: #00b884; --k3: #2f4bff; --k4: #ffc700; --k5: #7a4dff; --k6: #ff5a36; --k7: #12b5cb;
+  --ground: radial-gradient(40rem 32rem at 100% 100%, rgba(255, 61, 139, .1), transparent 70%), #f4f6fb;
+  --display: "Bricolage Grotesque", ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --r-slot: .9rem; --ch-op: 1; --pick-bd: transparent; --pick-bg: var(--fill); --pick-fg: var(--fg);
+  --line-c: var(--ink); --line-op: .45;
+}
+:root[data-theme="dark"] {
+  --page: #0f1230; --surface: #1d2360; --ink: #fff; --text: #d9dcf5; --muted: #b0b5de;
+  --line: #ffffff24; --line-strong: #ffffff44; --star: #fff; --tile: #8ea1ff; --tilebg: rgba(142, 161, 255, .18); --name: #aebcff;
+  --on: #fff; --on-fg: #0f1230; --focus: #ffc700; --glass: rgba(29, 35, 96, .88); --shadow: 0 30px 60px -32px #000;
+  --free: #fff; --panel: #2438d6; --card: #1d2360; --fill: #232a73; --fg: #fff;
+  --k0: #ff9a2e; --k1: #ff5fa2; --k2: #2fe0a8; --k3: #8ea1ff; --k4: #ffd84a; --k5: #a98bff; --k6: #ff7a5c; --k7: #4fd6e8;
+  --ground: radial-gradient(40rem 32rem at 100% 100%, rgba(255, 61, 139, .16), transparent 70%), #0f1230;
+}
+h1 { font-weight: 800; letter-spacing: -.03em; }
+.intro { padding: 1.5rem 1.25rem 2rem; margin: 0 -1.25rem; background: var(--panel); color: #fff; }
+.intro h1 { color: #fff; margin-top: 3.5rem; }
+.intro .lead { color: #eef0ff; }
+.intro .count { color: #fff; border-color: rgba(255, 255, 255, .55); background: rgba(255, 255, 255, .16); }
+.intro .count b { color: #fff; }
+.games { padding: 1.25rem; margin-top: 1.25rem; background: var(--card); border-radius: 1.5rem; box-shadow: var(--shadow); }
+.game { padding: 0; border-top: 0; }
+.ch { opacity: 1; padding: 0; text-shadow: none; }
+.ch > span {
+  display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: .9rem; background: var(--fill); color: var(--fg);
+  font: 800 1.5rem/1 var(--display); rotate: var(--rot);
+  box-shadow: 0 5px 0 var(--hue, var(--k0)), 0 14px 22px -10px rgba(20, 24, 51, .45);
+}
+.pick {
+  width: 3.1rem; height: 3.1rem; border-radius: .9rem; font-weight: 800; text-shadow: none;
+  box-shadow: 0 5px 0 var(--hue, var(--k0)), 0 0 0 3px var(--ink), 0 0 26px var(--hue, var(--k0));
+}
+#slots button.slot { background: var(--fill); color: var(--fg); border: var(--bw) solid var(--line); box-shadow: 0 4px 0 var(--hue, var(--k0)); }
+#field { -webkit-mask-image: none; mask-image: none; }
+@media (max-width: 899.98px) {
+  header { position: absolute; top: 0; left: 0; right: 0; }
+  .intro { border-radius: 0 0 2rem 2rem; padding-top: 1rem; }
+}
+@media (min-width: 900px) {
+  header { position: absolute; top: 0; right: 0; }
+  main { max-width: none; margin: 0; padding: 0; display: grid; grid-template-columns: 29.5rem minmax(0, 1fr); grid-template-rows: auto auto auto 1fr; }
+  .intro { grid-column: 1; grid-row: 1 / 5; margin: 0; min-height: 100dvh; padding: 3rem; }
+  .intro h1 { margin-top: 6rem; font-size: clamp(2.8rem, 4.4vw, 3.8rem); line-height: .98; }
+  .games { grid-column: 2; grid-row: 1; margin: 7.5rem 4rem 0; padding: 1.75rem 2rem; position: relative; z-index: 2; }
+  .bar { grid-column: 2; grid-row: 2; margin: 1.25rem 4rem 0; position: relative; z-index: 2; }
+  .tools { grid-column: 2; grid-row: 3; margin: 1rem 4rem 0; position: relative; z-index: 2; }
+  #field { inset: 0 0 0 29.5rem; z-index: 1; }
+}

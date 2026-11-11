@@ -25,19 +25,43 @@ The page never contains a name, link, hint text or the letters in name order (`n
 Letters are visible by design, as they float on the page. Trying all combinations offline can
 open the sealed links and the hash table; that is accepted. `/<slug>/` stays public.
 
+## Styles (one a day)
+The page shows one style a day: the same all day (local date) and never the same one two days
+in a row. `?style=<id>` previews one; the style of the day is `data-style` on `<html>`. Each
+style has a light and a dark mode. The set is the folders of `src/styles/`; nothing else lists them.
+
+- **Add** a folder `src/styles/<id>/`, **remove** it by deleting it, **update** it by editing its files.
+  `npm test` validates every style and the build ships it. Adding or removing a style changes
+  which style falls on which day. The plain `src/portal.css` is only the fallback (no JavaScript);
+  to rotate it too, copy its tokens into a style folder.
+- `style.json`: `id` (= folder name), `name`, `themeColor` (`light`, `dark`, as `#rrggbb`),
+  `motion` (`{"type":"rise"}`, or `{"type":"orbit","rings":[0.86,0.6,0.34],"period":[70,120],"max":11}`:
+  ring diameters as a fraction of the sky), `fonts` (names of files in `src/fonts/`).
+- `style.css`: write it plainly. The build scopes every rule to `:root[data-style="<id>"]`
+  (`@media` is handled; no nested rules; `@keyframes` stay global, so prefix their names).
+  Define both modes: `:root { light }` and `:root[data-theme="dark"] { dark }`.
+- `decor-head.html` (before the title) and `decor-field.html` (behind the letters) are optional
+  decoration. They are inert `<template>`s, no `style=`, `<script>` or `on*` (the content security
+  policy blocks them): position things with classes in `style.css`. `{{TOTAL}}` is the number of
+  games; `<b class="found">0</b>` is kept up to date. In `#decor-field`, `--d` is the smaller side of the sky.
+
+Tokens a style sets (all optional): colours `--page --surface --ink --text --muted --line
+--line-strong --glass --shadow --ground` (page background), letters `--free` (drifting) and `--star`
+(caught letters and the line), `--tile/--tilebg` (filled slots), `--name`, `--on/--on-fg` (selected
+button), `--focus`; shape `--bw --r-ctl --r-lang --r-slot --r-bar --r-count --r-play --sh-ctl --sh-bar
+--tt --ls`; letters `--ch-op --pick-bg/-bd/-fg --line-c/-w/-op/-dash`; hues `--k0 ... --k7`;
+fonts `--display --body`. Hooks for anything else: `.intro .games .bar .tools #field`, `.ch` (drifting
+letter: `data-k` = hue 0-7, `--rot`), `.pick` (caught letter: `data-k`, `data-n` = 1, 2, ...), `#slots .slot`.
+
 ## Layout and fonts
 PC (>= 900 px): text, the single row of slots (the tray) and tools in a left column; the sky of
-letters fills the right side. Mobile: text on top, sky in the middle, tools, tray fixed at the
-bottom. Letters caught in the sky become stars joined in click order; nothing is joined before.
-Light and dark follow the system (toggle saved as `portal.theme`).
+letters fills the right side (styles may rearrange this). Mobile: text on top, sky in the middle,
+tools, tray fixed at the bottom. A letter you catch stays lit where it was caught and joins a line
+in click order; nothing is joined before. Light and dark follow the system (toggle saved as `portal.theme`).
 
-Optional self-hosted variable fonts (SIL OFL), used when the files exist, else system fonts:
-```
-npm i --no-save @fontsource-variable/unbounded @fontsource-variable/manrope
-mkdir -p src/fonts
-cp node_modules/@fontsource-variable/unbounded/files/unbounded-latin-wght-normal.woff2 src/fonts/unbounded.woff2
-cp node_modules/@fontsource-variable/manrope/files/manrope-latin-wght-normal.woff2 src/fonts/manrope.woff2
-```
+Fonts are optional and self-hosted (SIL OFL): `npm i --no-save @fontsource-variable/<name> ...`, then
+`npm run fonts` copies what the styles ask for into `src/fonts/` (it prints the missing packages).
+Without the files the page uses system fonts. There are no external requests either way.
 
 ## Add a game
 1. The game deploys as its own Worker with `workers_dev = false`, assets under `<slug>/`.

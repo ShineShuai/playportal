@@ -1,0 +1,28 @@
+/* Sunrise: a warm sky with a big sun rising behind the letters (light), an ember moon at night (dark). */
+:root {
+  --page: #ffe9d6; --surface: #fff; --ink: #2a1233; --text: #4a2a52; --muted: #6f4f78;
+  --line: rgba(42, 18, 51, .16); --line-strong: rgba(42, 18, 51, .34);
+  --free: #7a2f7d; --star: #e23b13; --tile: #e23b13; --tilebg: rgba(226, 59, 19, .12); --name: #e23b13;
+  --on: #2a1233; --on-fg: #fff; --focus: #2a1233; --glass: rgba(255, 255, 255, .62); --shadow: 0 22px 44px -26px #7a2f4d;
+  --ground: linear-gradient(165deg, #ffe9d6 0%, #ffd2c2 48%, #f7b9d4 100%);
+  --sun: radial-gradient(circle at 38% 30%, #fff4c2 0%, #ffcf5a 28%, #ff8a3d 62%, #f0482a 100%);
+  --sun-glow: 0 0 140px 20px rgba(255, 150, 70, .55); --ring: rgba(255, 255, 255, .7);
+  --display: Outfit, ui-rounded, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --ch-op: .75; --line-c: #e23b13; --line-op: .8; --line-w: 2;
+}
+:root[data-theme="dark"] {
+  --page: #1c0e22; --surface: #36193e; --ink: #fff1e6; --text: #f1d8de; --muted: #cba9bd;
+  --line: rgba(255, 240, 230, .16); --line-strong: rgba(255, 240, 230, .34);
+  --free: #ffd0a1; --star: #ff7a4d; --tile: #ff7a4d; --tilebg: rgba(255, 122, 77, .2); --name: #ffb347;
+  --on: #ffe2b0; --on-fg: #1c0e22; --focus: #ffb347; --glass: rgba(54, 26, 62, .7); --shadow: 0 22px 44px -26px #000;
+  --ground: radial-gradient(34rem 28rem at 100% 100%, rgba(255, 106, 61, .28), transparent 70%), radial-gradient(34rem 28rem at 0% 0%, rgba(150, 60, 200, .25), transparent 70%), #1c0e22;
+  --sun: radial-gradient(circle at 38% 30%, #ffe2b0 0%, #ff9a5c 32%, #d93d6a 68%, #5a1a73 100%);
+  --sun-glow: 0 0 160px 30px rgba(255, 110, 90, .45); --ring: rgba(255, 255, 255, .14);
+}
+h1 { letter-spacing: -.03em; }
+.ch { font-weight: 700; }
+#field { -webkit-mask-image: none; mask-image: none; }
+#decor-field .ring { position: absolute; left: 50%; top: 92%; translate: -50% -50%; aspect-ratio: 1; border-radius: 50%; border: 1px solid var(--ring); }
+#decor-field .o1 { width: calc(var(--d) * .98); }
+#decor-field .sun { position: absolute; left: 50%; top: 92%; translate: -50% -50%; width: calc(var(--d) * .87); aspect-ratio: 1; border-radius: 50%; background: var(--sun); box-shadow: var(--sun-glow); }

@@ -1,0 +1,7 @@
+{
+  "id": "orbit",
+  "name": "Orbit",
+  "themeColor": { "light": "#e6f6f1", "dark": "#0d4f4a" },
+  "motion": { "type": "orbit", "rings": [0.86, 0.6, 0.34], "period": [70, 120], "max": 11 },
+  "fonts": ["lexend"]
+}

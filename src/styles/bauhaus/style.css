@@ -1,0 +1,39 @@
+/* Bauhaus: circle, square, triangle; red, yellow, blue and black; sharp corners and uppercase type. */
+:root {
+  --page: #efe8d8; --paper: #efe8d8; --surface: #efe8d8; --ink: #141414; --text: #2a2a2a; --muted: #55524a;
+  --line: #141414; --line-strong: #141414; --free: #141414; --star: #141414; --tile: #141414; --tilebg: #f4c20d; --name: #e03a1e;
+  --on: #141414; --on-fg: #efe8d8; --focus: #e03a1e; --glass: #efe8d8; --shadow: none;
+  --red: #e03a1e; --yellow: #f4c20d; --blue: #1f4fa3; --ground: #efe8d8;
+  --display: Jost, "Futura", ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: Jost, "Futura", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --bw: 3px; --r-ctl: 0; --r-lang: 0; --r-slot: 0; --r-bar: 0; --r-count: 0; --r-play: 0; --tt: uppercase; --ls: .12em; --sh-bar: none;
+  --ch-op: 1; --pick-bg: var(--ink); --pick-bd: var(--ink); --pick-fg: var(--paper); --line-c: var(--ink); --line-op: 1; --line-w: 4;
+}
+:root[data-theme="dark"] {
+  --page: #121212; --paper: #121212; --surface: #121212; --ink: #efe8d8; --text: #e4ddcc; --muted: #aaa391;
+  --line: #efe8d8; --line-strong: #efe8d8; --free: #efe8d8; --star: #efe8d8; --tile: #efe8d8;
+  --on: #efe8d8; --on-fg: #121212; --focus: #f4c20d; --glass: #121212; --red: #e8442a; --blue: #2f64c8; --ground: #121212;
+}
+h1 { font-weight: 800; text-transform: uppercase; line-height: .95; letter-spacing: -.01em; }
+h1 .w1 { display: block; color: var(--red); font-size: .4em; letter-spacing: .2em; font-weight: 700; margin-bottom: .35rem; }
+h1 .w2 { display: block; }
+h1::after { content: ""; display: block; width: 8rem; height: .6rem; background: var(--ink); margin-top: 1rem; }
+.lead { font-weight: 500; color: var(--text); }
+.count { background: var(--red); border-color: var(--red); color: #fff; text-transform: uppercase; letter-spacing: .14em; font-weight: 700; }
+.count b { color: #fff; }
+.blurb { font-weight: 700; }
+.meta { text-transform: uppercase; letter-spacing: .14em; }
+.name { color: var(--red); text-transform: uppercase; }
+.play { background: var(--red); color: #fff; }
+#slots button.slot { color: #141414; }
+#shelf button { border-radius: 0; }
+#field { -webkit-mask-image: none; mask-image: none; }
+.ch { font: 700 1.9rem/1 var(--display); color: var(--ink); -webkit-text-stroke: 5px var(--paper); paint-order: stroke fill; text-shadow: none; }
+.pick { border: 0; }
+#decor-field .shapes { position: absolute; inset: 0; width: 100%; height: 100%; }
+#decor-field .y { fill: var(--yellow); }
+#decor-field .o { fill: none; stroke: var(--ink); stroke-width: 3; }
+#decor-field .b { fill: var(--blue); }
+#decor-field .r { fill: var(--red); }
+#decor-field .k { fill: var(--ink); }
+@media (min-width: 900px) { h1 { font-size: clamp(2.6rem, 4.4vw, 4rem); } }

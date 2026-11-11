@@ -1,0 +1,38 @@
+/* Orbit: letters circle three rings around a core that counts the games found. */
+:root {
+  --page: #e6f6f1; --surface: #fff; --ink: #0b3b36; --text: #1d5a52; --muted: #3f6e67;
+  --line: rgba(11, 59, 54, .16); --line-strong: rgba(11, 59, 54, .34);
+  --star: #0d7d73; --tile: #0d7d73; --tilebg: rgba(13, 125, 115, .14); --name: #0d7d73;
+  --on: #0b3b36; --on-fg: #fff; --focus: #0b3b36; --glass: rgba(255, 255, 255, .72);
+  --shadow: 0 24px 50px -28px rgba(11, 59, 54, .4);
+  --free: #0b3b36; --chip: #ffd699; --ring: rgba(13, 125, 115, .38);
+  --ground: radial-gradient(46rem 46rem at var(--gx) var(--gy), rgba(13, 125, 115, .2), transparent 68%), linear-gradient(160deg, #d3f0e7, #eefaf6);
+  --display: Lexend, ui-rounded, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: Lexend, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --r-slot: 50%; --ch-op: 1; --pick-bg: var(--chip); --pick-bd: var(--ink); --pick-fg: var(--free);
+}
+:root[data-theme="dark"] {
+  --page: #0d4f4a; --surface: #0a3a36; --ink: #fff; --text: #eafff8; --muted: #c4efe3;
+  --line: #ffffff2e; --line-strong: #ffffff55; --star: #ffe3b8; --tile: #ffe3b8; --tilebg: rgba(255, 227, 184, .18); --name: #ffe3b8;
+  --on: #ffe3b8; --on-fg: #0d3b37; --focus: #ffe3b8; --glass: rgba(10, 58, 54, .85); --shadow: 0 20px 40px -24px #000;
+  --free: #0d3b37; --chip: #ffe3b8; --ring: rgba(124, 240, 200, .3);
+  --ground: radial-gradient(46rem 46rem at var(--gx) var(--gy), #12766e, transparent 70%), #0d4f4a;
+}
+h1 { letter-spacing: -.03em; }
+.count { display: none; }
+#field { -webkit-mask-image: none; mask-image: none; }
+.ch {
+  width: 2.9rem; height: 2.9rem; padding: 0; border-radius: 50%; background: var(--chip); color: var(--free);
+  text-shadow: none; display: grid; place-items: center; box-shadow: 0 0 22px color-mix(in srgb, var(--chip) 40%, transparent);
+}
+.ch > span { font-size: 1.3rem; }
+#decor-field .ring { position: absolute; left: 50%; top: 50%; translate: -50% -50%; aspect-ratio: 1; border: 1.5px solid var(--ring); border-radius: 50%; }
+#decor-field .r1 { width: calc(var(--d) * .86); border-style: dashed; }
+#decor-field .r2 { width: calc(var(--d) * .6); }
+#decor-field .r3 { width: calc(var(--d) * .34); }
+#decor-field .core {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: calc(var(--d) * .2); aspect-ratio: 1;
+  border-radius: 50%; background: var(--surface); border: 1.5px solid var(--line-strong);
+  display: grid; place-content: center; text-align: center; color: var(--ink); font: 700 1.5rem/1.1 var(--display);
+}
+#decor-field .core small { display: block; font: 500 .7rem var(--body); color: var(--muted); }

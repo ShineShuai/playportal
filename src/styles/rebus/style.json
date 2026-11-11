@@ -1,0 +1,7 @@
+{
+  "id": "rebus",
+  "name": "Rebus",
+  "themeColor": { "light": "#fffaf0", "dark": "#16141f" },
+  "motion": { "type": "rise" },
+  "fonts": ["fredoka", "nunito-sans"]
+}

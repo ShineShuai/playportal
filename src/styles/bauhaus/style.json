@@ -1,0 +1,7 @@
+{
+  "id": "bauhaus",
+  "name": "Bauhaus",
+  "themeColor": { "light": "#efe8d8", "dark": "#121212" },
+  "motion": { "type": "rise" },
+  "fonts": ["jost"]
+}

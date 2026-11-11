@@ -1,0 +1,7 @@
+{
+  "id": "sunrise",
+  "name": "Sunrise",
+  "themeColor": { "light": "#ffe9d6", "dark": "#1c0e22" },
+  "motion": { "type": "rise" },
+  "fonts": ["outfit", "dm-sans"]
+}

@@ -1,0 +1,46 @@
+/* Bento: a grid of rounded tiles, each with its own colour; the sky is one big gradient tile. */
+:root {
+  --page: #eef0f5; --surface: #fff; --ink: #161a3a; --text: #3a3f66; --muted: #5a5f86;
+  --line: rgba(22, 26, 58, .12); --line-strong: rgba(22, 26, 58, .3);
+  --free: #fff; --star: #ffd166; --tile: #6a5bff; --tilebg: rgba(106, 91, 255, .12); --name: #6a5bff;
+  --on: #161a3a; --on-fg: #fff; --focus: #6a5bff; --glass: rgba(255, 255, 255, .9); --shadow: 0 24px 40px -28px rgba(22, 26, 58, .28);
+  --card: #fff; --t-title: #161a3a; --t-title-fg: #fff; --t-title-lead: rgba(255, 255, 255, .78); --t-game: #ffe8d9;
+  --sky: linear-gradient(150deg, #6a5bff 0%, #3b49e8 50%, #1d6fe0 100%); --ground: #eef0f5;
+  --display: Sora, ui-sans-serif, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: Manrope, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --r-slot: .85rem; --ch-op: .9; --pick-bg: rgba(255, 209, 102, .2); --pick-bd: #ffd166; --pick-fg: #ffd166;
+  --line-c: #ffd166; --line-op: .9; --line-w: 2;
+}
+:root[data-theme="dark"] {
+  --page: #140e0c; --surface: #241917; --ink: #fff1e4; --text: #ecd5c6; --muted: #c3a595;
+  --line: rgba(255, 225, 200, .14); --line-strong: rgba(255, 225, 200, .32);
+  --free: #ffd9b0; --star: #ffb347; --tile: #ff9d3d; --tilebg: rgba(255, 157, 61, .16); --name: #ffb347;
+  --on: #ffd9b0; --on-fg: #241917; --focus: #ffb347; --glass: rgba(54, 36, 30, .9); --shadow: 0 24px 40px -28px #000;
+  --card: #241917; --t-title: linear-gradient(150deg, #ff9d3d 0%, #ff6a3d 55%, #d93d6a 100%); --t-title-fg: #2a0f10; --t-title-lead: rgba(42, 15, 16, .82); --t-game: #33231e;
+  --sky: linear-gradient(150deg, #3a1a3a 0%, #2a1220 55%, #1b0f1a 100%); --ground: #140e0c;
+  --pick-bg: rgba(255, 179, 71, .18); --pick-bd: #ffb347; --pick-fg: #ffb347; --line-c: #ffb347;
+}
+h1 { letter-spacing: -.025em; }
+.intro { padding: 1.5rem; border-radius: 1.5rem; background: var(--t-title); color: var(--t-title-fg); }
+.intro h1 { margin-top: 0; color: var(--t-title-fg); }
+.intro .lead { color: var(--t-title-lead); }
+.intro .count { color: var(--t-title-fg); border-color: currentColor; background: transparent; }
+.intro .count b { color: inherit; }
+.games { margin: 0; padding: 1.25rem 1.5rem; border-radius: 1.5rem; background: var(--t-game); }
+.game { padding: 0; border-top: 0; }
+.tools { margin: 0; padding: 1rem 1.25rem; border-radius: 1.5rem; background: var(--card); border: var(--bw) solid var(--line); }
+#field { border-radius: 2rem; background: var(--sky); box-shadow: var(--shadow); -webkit-mask-image: none; mask-image: none; }
+.ch { font-weight: 700; text-shadow: 0 0 .6em rgba(255, 255, 255, .35); }
+@media (min-width: 900px) {
+  header { padding: 1.5rem 3rem 0; }
+  main { max-width: 36rem; margin: 0 0 0 3rem; padding: 0 0 2rem; gap: 1rem; }
+  .intro { min-height: 13rem; }
+  .bar { margin: 0; background: var(--card); }
+  #field { inset: 6rem 3rem 2rem calc(3rem + 36rem + 1rem); }
+}
+@media (max-width: 899.98px) {
+  main { gap: .75rem; }
+  #field { margin: 0; min-height: 15rem; }
+  .games { order: 2; }
+  .tools { order: 3; }
+}

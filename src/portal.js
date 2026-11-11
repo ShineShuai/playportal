@@ -29,6 +29,15 @@ const store = {
 };
 const field = $('#field');
 const sky = $('#sky');
+// The style of the day (style.js sets data-style): its decoration, motion and per-letter hues.
+const styles = JSON.parse($('#styles').textContent);
+const cfg = styles.find((x) => x.id === document.documentElement.dataset.style) ?? {};
+const motion = cfg.motion ?? { type: 'rise' };
+for (const slot of ['head', 'field']) {
+  const t = document.querySelector(`template[data-decor="${cfg.id}"][data-slot="${slot}"]`);
+  if (t) $(`#decor-${slot}`).append(t.content.cloneNode(true));
+}
+const kOf = (t) => ((t.charCodeAt(0) * 5) ^ (t.charCodeAt(0) >> 3)) % 8; // one of 8 hues per letter
 let tray = [];  // collected letters: the only row of slots
 let trail = []; // the caught letters that stay in the sky {x, y, el}, in tray order (null: none)
 let fails = 0;
@@ -62,6 +71,7 @@ function drawTray() {
     if (full) {
       el.type = 'button';
       el.textContent = tray[i];
+      el.dataset.k = kOf(tray[i]);
       el.setAttribute('aria-label', `${tray[i]}: ${tx('drop')}`);
       el.onclick = () => removeAt(i);
     }
@@ -78,6 +88,7 @@ function node(tag, attrs) {
 
 /** The caught letters, joined in click order: nothing is joined before a click. */
 function drawTrail() {
+  trail.filter(Boolean).forEach((p, i) => { p.el.dataset.n = i + 1; });
   const pts = trail.filter(Boolean);
   $('#trail').replaceChildren(...(pts.length > 1
     ? [node('polyline', { class: 'line', points: pts.map((p) => `${p.x},${p.y}`).join(' ') })]
@@ -93,6 +104,7 @@ function pin(t, glyph) {
   el.type = 'button';
   el.className = 'pick';
   el.textContent = t;
+  el.dataset.k = kOf(t);
   el.setAttribute('aria-label', `${t}: ${tx('drop')}`);
   el.style.cssText = `left:${x}px;top:${y}px`;
   el.onclick = () => removeAt(trail.findIndex((p) => p?.el === el));
@@ -188,7 +200,7 @@ let bag = [];
 let live = 0;
 let motionOff = store.get('portal.motion', 'on') === 'off';
 const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-const capacity = () => Math.max(7, Math.min(16, Math.round((field.clientWidth * field.clientHeight) / DENSITY)));
+const capacity = () => Math.max(7, Math.min(motion.max ?? 16, Math.round((field.clientWidth * field.clientHeight) / DENSITY)));
 
 function draw() { // a freshly shuffled bag: every needed letter turns up once per bag
   if (!bag.length) {
@@ -206,17 +218,26 @@ function spawn(early) {
   const h = field.clientHeight;
   if (motionOff || document.hidden || !w || live >= capacity()) return;
   const t = draw();
-  const life = (h + 60) / rand(...SPEED);
   const b = document.createElement('button');
   const s = document.createElement('span');
   s.textContent = t;
   b.append(s);
   b.type = 'button';
   b.className = 'ch';
+  b.dataset.k = kOf(t);
   b.setAttribute('aria-label', `${tx('take')} ${t}`);
-  b.style.cssText = `left:${rand(4, Math.max(8, w - 52))}px;--life:${life}s;` +
-    `--delay:${early ? -rand(0, life * 0.8) : 0}s;--from:${h + 10}px;--to:-50px;` +
-    `--sway:${rand(6, 16)}px;--swt:${rand(4, 7)}s`;
+  if (motion.type === 'orbit') { // circles the centre of the sky on one of the rings
+    const life = rand(...motion.period);
+    const ring = Math.floor(Math.random() * motion.rings.length);
+    b.classList.add('orbit');
+    b.style.cssText = `--life:${life}s;--delay:${early ? -rand(0, life) : 0}s;--r:${(motion.rings[ring] * Math.min(w, h)) / 2}px;` +
+      `--a0:${rand(0, 360)}deg;--dir:${ring % 2 ? -1 : 1};--rot:${rand(-9, 9)}deg`;
+  } else {
+    const life = (h + 60) / rand(...SPEED);
+    b.style.cssText = `left:${rand(4, Math.max(8, w - 52))}px;--life:${life}s;` +
+      `--delay:${early ? -rand(0, life * 0.8) : 0}s;--from:${h + 10}px;--to:-50px;` +
+      `--sway:${rand(6, 16)}px;--swt:${rand(4, 7)}s;--rot:${rand(-9, 9)}deg`;
+  }
   b.onclick = () => {
     if (tray.length >= MAX) { say(tx('full')); shake(); return; } // keep the letter on the page
     const point = pin(t, s.getBoundingClientRect()); // where the letter is drawn right now
