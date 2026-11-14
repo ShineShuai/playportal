@@ -1,0 +1,128 @@
+/* Gazette: a newspaper front page. Serif headlines, ink rules, crossword cells, paper grain. */
+:root {
+  --page: #f1e9d8; --surface: #fbf6ea; --paper: #fffdf6; --ink: #16130d; --text: #2a251b;
+  --muted: #5a5243; --line: rgba(22, 19, 13, .3); --line-strong: #16130d; --red: #b3261e;
+  --free: #16130d; --star: #b3261e; --tile: #b3261e; --tilebg: rgba(179, 38, 30, .1);
+  --name: #b3261e; --on: #16130d; --on-fg: #f1e9d8; --focus: #b3261e;
+  --glass: #f1e9d8; --shadow: none; --block: #16130d;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://\
+www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbul\
+ence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stit\
+ch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35 0 0 0 0 0.27 0 0 0 0 0.16 0.9 0 0\
+ 0 -0.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url%2\
+8%23n%29'/%3E%3C/svg%3E");
+  --ground: var(--grain), #f1e9d8;
+  --serif: ui-serif, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Songti SC",
+    "Noto Serif CJK SC", "Times New Roman", serif;
+  --display: var(--serif); --body: var(--serif);
+  --r-ctl: 0; --r-lang: 0; --r-slot: 0; --r-bar: 0; --r-count: 0; --r-play: 0;
+  --tt: uppercase; --ls: .12em; --sh-bar: none; --ch-op: 1;
+  --line-c: #b3261e; --line-w: 2.5; --line-op: .85;
+}
+:root[data-theme="dark"] {
+  --page: #15120c; --surface: #1d1912; --paper: #1d1912; --ink: #efe6d2; --text: #e2d9c4;
+  --muted: #b5aa90; --line: rgba(239, 230, 210, .3); --line-strong: #efe6d2; --red: #ff6b5c;
+  --free: #efe6d2; --star: #ff6b5c; --tile: #ff6b5c; --tilebg: rgba(255, 107, 92, .12);
+  --name: #ff6b5c; --on: #efe6d2; --on-fg: #15120c; --focus: #ff6b5c; --glass: #15120c;
+  --block: #3a3428;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' heigh\
+t='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency\
+='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 \
+0 0.95 0 0 0 0 0.9 0 0 0 0 0.78 0.7 0 0 0 -0.28'/%3E%3C/filter%3E%3Crect width\
+='100%25' height='100%25' filter='url%28%23n%29'/%3E%3C/svg%3E");
+  --ground: var(--grain), #15120c; --line-c: #ff6b5c;
+}
+.langs button, .icon, #clear, #pause, #know { font-size: .78rem; }
+.count { display: none; }
+#decor-head .dateline {
+  display: flex; justify-content: space-between; align-items: center; gap: .5rem;
+  margin-top: 1rem; padding: .35rem 0; border-top: 4px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  font: 600 .72rem/1 var(--serif); letter-spacing: .2em; color: var(--ink);
+}
+#decor-head .star { color: var(--red); letter-spacing: 0; }
+h1 {
+  margin: .9rem 0 .8rem; padding-bottom: .7rem; border-bottom: 4px double var(--ink);
+  font: 900 clamp(2.5rem, 12vw, 3.4rem) / .9 var(--serif); letter-spacing: -.03em;
+  text-transform: uppercase;
+}
+html[data-lang="zh"] h1 { text-transform: none; letter-spacing: 0; line-height: 1.1; }
+h1 .w1 {
+  display: flex; align-items: center; gap: .6rem; margin-bottom: .4em;
+  font: italic 500 .38em/1 var(--serif); letter-spacing: .02em; text-transform: none;
+}
+h1 .w1::before, h1 .w1::after { content: ""; flex: 1; height: 1px; background: currentColor; }
+h1 .w2 { display: block; }
+.lead { max-width: none; color: var(--text); font-size: 1.05rem; line-height: 1.55; }
+html[data-lang="en"] .lead::first-letter {
+  float: left; padding: .06em .1em 0 0; color: var(--red); font: 900 3.2em / .8 var(--serif);
+}
+.games {
+  margin: 1.1rem 0 0; padding: .9rem 1rem; border: 3px double var(--ink); background: var(--paper);
+}
+.game { padding: 0; border-top: 0; }
+.blurb { font: 700 1.2rem/1.3 var(--serif); }
+.meta { font: 600 .72rem/1 var(--serif); letter-spacing: .18em; text-transform: uppercase; }
+.name { font: 900 1.9rem/1.1 var(--serif); letter-spacing: -.02em; text-transform: uppercase; }
+.hint { font-style: italic; }
+.play {
+  padding: .8rem 1.4rem .95rem; border-radius: 0; background: var(--ink); color: var(--paper);
+  font: 700 .85rem var(--serif); letter-spacing: .16em; text-transform: uppercase;
+  box-shadow: inset 0 -4px 0 var(--accent);
+}
+.bar {
+  padding: .75rem .25rem 0; border: 0; border-top: 4px double var(--ink); background: var(--glass);
+  -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.fit { font-style: italic; }
+#slots { gap: 0; counter-reset: gz; }
+#slots .slot {
+  position: relative; counter-increment: gz; max-width: 3.4rem; margin-left: -2px;
+  border: 2px solid var(--ink); background: var(--paper); color: var(--ink);
+  font: 800 1.35rem var(--serif); text-transform: uppercase;
+}
+#slots .slot:first-child { margin-left: 0; }
+#slots .slot::before {
+  content: counter(gz); position: absolute; top: 2px; left: 4px; font: 600 .55rem/1 var(--serif);
+}
+#slots button.slot { border: 2px solid var(--ink); background: var(--paper); box-shadow: none; }
+#shelf button { border-radius: 0; font-family: var(--serif); text-transform: uppercase; }
+#name { font-family: var(--serif); }
+#field {
+  background: var(--paper); border-left: 3px double var(--ink);
+  -webkit-mask-image: none; mask-image: none;
+}
+#decor-field .grid { position: absolute; inset: 0; width: 100%; height: 100%; }
+#decor-field .g {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+#decor-field .b { fill: var(--block); }
+.ch { padding: 0; text-shadow: none; }
+.ch > span {
+  display: grid; place-items: center; width: 2.9rem; height: 2.9rem; rotate: var(--rot);
+  background: var(--paper); color: var(--ink); border: 2px solid var(--ink);
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--ink);
+  font: 800 1.5rem/1 var(--serif); text-transform: uppercase;
+}
+.pick {
+  width: 3rem; height: 3rem; border-radius: 0; border: 2px solid var(--ink);
+  background: var(--red);
+  color: var(--paper); font: 800 1.5rem/1 var(--serif); text-transform: uppercase;
+  text-shadow: none;
+  box-shadow: 0 0 0 3px var(--paper), 0 0 0 4px var(--red);
+}
+.pick::after {
+  content: attr(data-n); position: absolute; top: 2px; left: 4px; font: 600 .6rem/1 var(--serif);
+}
+@media (min-width: 900px) {
+  h1 { font-size: clamp(2.8rem, 4.6vw, 4.2rem); }
+}
+@media (max-width: 899.98px) {
+  #field {
+    margin: 0 -1.25rem; flex: 1 0 auto; height: 17rem; min-height: 0;
+    border-left: 0; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink);
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "id": "blueprint",
+  "name": "Blueprint",
+  "themeColor": { "light": "#f4f8ff", "dark": "#0c2d73" },
+  "motion": { "type": "rise", "max": 12 },
+  "fonts": ["jost"]
+}

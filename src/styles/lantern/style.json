@@ -1,0 +1,7 @@
+{
+  "id": "lantern",
+  "name": "Lantern",
+  "themeColor": { "light": "#f3ede0", "dark": "#0b0f2b" },
+  "motion": { "type": "rise", "max": 11 },
+  "fonts": ["outfit", "jost"]
+}

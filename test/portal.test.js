@@ -99,7 +99,10 @@ test('accent contrast: blue passes, a light colour does not', () => {
 });
 
 // ---- the style set -------------------------------------------------------------------------
-const STYLE_IDS = ['arcade', 'aurora', 'bauhaus', 'bento', 'clay', 'orbit', 'rebus', 'sunrise', 'tiles'];
+const STYLE_IDS = [
+  'arcade', 'aurora', 'bauhaus', 'bento', 'blueprint', 'clay', 'gazette', 'lantern', 'orbit', 'rebus',
+  'sunrise', 'tiles',
+];
 const styleSrc = readFileSync(new URL('../src/style.js', import.meta.url), 'utf8');
 function runStyle(list, { search = '', date = new Date(2026, 10, 11) } = {}) {
   const attrs = {};
@@ -199,9 +202,11 @@ test('the build ships every style: scoped css, inert decoration templates, the r
     assert.ok(css.includes(`/* style: ${id} */`), id);
     assert.ok(html.includes(`"id":"${id}"`), id);
   }
-  for (const id of ['arcade', 'aurora', 'clay', 'orbit']) {
+  for (const id of ['arcade', 'aurora', 'blueprint', 'clay', 'gazette', 'lantern', 'orbit']) {
     assert.ok(html.includes(`<template data-decor="${id}" data-slot="field">`), id);
   }
-  assert.ok(html.includes('<template data-decor="rebus" data-slot="head">'));
+  for (const id of ['blueprint', 'gazette', 'lantern', 'rebus']) {
+    assert.ok(html.includes(`<template data-decor="${id}" data-slot="head">`), id);
+  }
   assert.ok(!/<template[^>]*>[^]*?\sstyle\s*=/.test(html), 'decoration must not use style attributes (CSP)');
 });
