@@ -1,7 +1,27 @@
 {
+  "styles": {
+    "enabled": {
+      "arcade": true,
+      "aurora": true,
+      "bauhaus": true,
+      "bento": true,
+      "blueprint": true,
+      "clay": true,
+      "gazette": true,
+      "lantern": true,
+      "orbit": true,
+      "rebus": true,
+      "sunrise": true,
+      "tiles": true
+    }
+  },
+  "puzzle": {
+    "decoys": "eorst8"
+  },
   "games": [
     {
       "slug": "zigzag",
+      "enabled": true,
       "name": "zigzag",
       "worker": "zigzag-site",
       "accent": "#3b68ee",

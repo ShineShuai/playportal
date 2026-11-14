@@ -1,21 +1,22 @@
-// Builds dist/: the page (teasers from games.json; answers only sealed, hashed or encoded), scripts, styles.
+// Builds dist/ from portal.config.json: the page (teasers; answers only sealed, hashed or encoded),
+// scripts, the enabled styles and their fonts. The config itself never ships.
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { createHash } from 'node:crypto';
 import { buildData } from './seal.js';
-import { load } from './manifest.js';
-import { loadStyles, registry, templates } from './styles.js';
+import { active, loadConfig } from './manifest.js';
+import { loadStyles, registry, selectStyles, templates } from './styles.js';
 
 const src = (f) => new URL(`../src/${f}`, import.meta.url);
 const cardId = (slug) => createHash('sha256').update(slug).digest('hex').slice(0, 8);
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
 const bi = (o) => `<span lang="en">${esc(o.en)}</span><span lang="zh">${esc(o.zh)}</span>`;
 
-export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev') {
-  const games = load();
-  const styles = await loadStyles();
-  const data = await buildData(games, cardId);
+export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev', config = loadConfig()) {
+  const games = active(config.games);
+  const styles = selectStyles(await loadStyles(), config.styles.enabled);
+  const data = await buildData(games, cardId, config.puzzle.decoys);
   const teasers = games.map((g) => {
     const n = g.name.length;
     return `<li class="game" data-id="${cardId(g.slug)}" data-accent="${g.accent ?? '#3b68ee'}">
@@ -25,8 +26,9 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev')
         <a class="play" hidden><span lang="en">Play</span><span lang="zh">开始玩</span></a>
       </li>`;
   }).join('\n      ');
-  // Optional self-hosted variable fonts: src/fonts/<family>.woff2 (e.g. unbounded, manrope)
-  const fontFiles = existsSync(src('fonts/')) ? (await readdir(src('fonts/'))).filter((f) => f.endsWith('.woff2')).sort() : [];
+  // Optional self-hosted variable fonts src/fonts/<family>.woff2: only those an enabled style asks for
+  const wanted = new Set(styles.flatMap((s) => s.fonts).map((f) => `${f}.woff2`));
+  const fontFiles = existsSync(src('fonts/')) ? (await readdir(src('fonts/'))).filter((f) => wanted.has(f)).sort() : [];
   const html = (await readFile(src('index.html'), 'utf8'))
     .replace('{{TEASERS}}', () => teasers)
     .replaceAll('{{TOTAL}}', games.length)

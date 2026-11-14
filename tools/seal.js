@@ -2,7 +2,6 @@
 import { b64, encode, seal, tag } from '../src/match.js';
 import { key } from '../src/match.js';
 
-export const DECOYS = 'eorst8';
 export const MAX_TAGS = 13_000; // 5 bytes each: about 64 KB of hint table on the page
 
 /** Every token multiset that spells `name`: a letter may be replaced by one of its aliases. */
@@ -17,7 +16,7 @@ export function accepted(name, alias = {}) {
 }
 
 /** What drifts over the page: every letter and every alias as often as it can be needed. */
-export function poolOf(games, decoys = DECOYS) {
+export function poolOf(games, decoys = '') {
   const pool = [];
   for (const { name, alias = {} } of games) {
     const count = {};
@@ -62,7 +61,7 @@ export function subsets(sets) {
 }
 
 /** The data block of the page. No plain name, link, hint or letter list in it. */
-export async function buildData(games, cardId) {
+export async function buildData(games, cardId, decoys = '') {
   const seals = {};
   await Promise.all(games.flatMap((g) => [...accepted(g.name, g.alias)].map(async (k) => {
     const [id, ct] = await seal(k, { i: cardId(g.slug), n: g.name, u: `/${g.slug}/` });
@@ -73,7 +72,7 @@ export async function buildData(games, cardId) {
   if (tags.length > MAX_TAGS) throw new Error(`hint table has ${tags.length} tags (max ${MAX_TAGS}): shorten names or aliases`);
   return {
     lens: [...new Set(games.map((g) => g.name.length))].sort((a, b) => a - b),
-    pool: encode(shuffled(poolOf(games))),
+    pool: encode(shuffled(poolOf(games, decoys))),
     seals,
     tags: b64(Buffer.from(tags.join(''), 'hex')),
     clues: Object.fromEntries(games.map((g) => [cardId(g.slug), encode(g.hint)])),

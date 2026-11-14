@@ -23,7 +23,8 @@ for p in portal.js match.js lang.js theme.js style.js portal.css; do
 done
 fetch "$base/" | grep -q 'id="data"' || fail "the portal page has no data block"
 
-for slug in $(sed -n 's/.*"slug": *"\([^"]*\)".*/\1/p' games.json); do
+slugs=$(node -p "JSON.parse(require('fs').readFileSync('portal.config.json', 'utf8')).games.map((g) => g.slug).join(' ')")
+for slug in $slugs; do   # every routed game, enabled in the portal or not
   for p in "$slug" "$slug/" "$slug/build.json"; do
     code=$(curl -s -o /dev/null -w '%{http_code}' -L "$base/$p?cb=$cb")
     [ "$code" = 200 ] || fail "/$p answers HTTP $code (service binding to the game broken?)"

@@ -1,4 +1,5 @@
-// Build only: the style set. One folder per style in src/styles/<id>/ (see README "Styles").
+// Build only: the style set. One folder per style in src/styles/<id>/, switched on in
+// portal.config.json (see README "Styles").
 import { existsSync } from 'node:fs';
 import { readdir, readFile } from 'node:fs/promises';
 
@@ -105,6 +106,19 @@ export async function loadStyles(root = ROOT) {
   }
   if (errors.length) throw new Error(`src/styles:\n- ${errors.join('\n- ')}`);
   return styles;
+}
+
+/** The enabled styles. Config and folders must agree: a folder nobody listed is a mistake. */
+export function selectStyles(styles, enabled) {
+  const ids = styles.map((s) => s.id);
+  const errors = [
+    ...ids.filter((id) => !Object.hasOwn(enabled, id))
+      .map((id) => `style "${id}" has a folder but is not in styles.enabled: add it as true or false`),
+    ...Object.keys(enabled).filter((id) => !ids.includes(id))
+      .map((id) => `styles.enabled lists "${id}", which has no folder in src/styles`),
+  ];
+  if (errors.length) throw new Error(`portal.config.json:\n- ${errors.join('\n- ')}`);
+  return styles.filter((s) => enabled[s.id]);
 }
 
 /** What the page needs to know about the set (no CSS): ids, names, motion, browser colours. */

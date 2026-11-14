@@ -1,7 +1,7 @@
 # Portal at https://play.vintoshine.com/ : static page plus a router for the games.
 # Each game is its own Worker (own repo, own deploy) reached through a service binding.
 # Per game: one [[services]] block, binding GAME_<SLUG>, and its paths in run_worker_first.
-# `npm test` checks this file against games.json. The custom domain is attached once in the
+# `npm test` checks this file against portal.config.json. The custom domain is attached once in the
 # dashboard (Worker -> Settings -> Domains & Routes): no `routes`, no zone permission needed.
 name = "play-portal"
 main = "src/worker.js"

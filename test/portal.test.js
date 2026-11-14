@@ -1,19 +1,26 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import vm from 'node:vm';
 import { decode, fitOf, key, open, seal, tagSet } from '../src/match.js';
 import { build } from '../tools/build.js';
-import { binding, checkWrangler, contrastOnWhite, load } from '../tools/manifest.js';
+import { active, binding, checkWrangler, contrastOnWhite, loadConfig } from '../tools/manifest.js';
 import { accepted, poolOf } from '../tools/seal.js';
-import { loadStyles, registry, scope, templates } from '../tools/styles.js';
+import { loadStyles, registry, scope, selectStyles, templates } from '../tools/styles.js';
 
-const zigzag = { name: 'zigzag', alias: { z: ['2'], i: ['1'], g: ['9'], a: ['2', '0'] } };
+const game = (name, extra = {}) => ({
+  slug: name, name, worker: `${name}-site`, blurb: { en: 'A blurb.', zh: '说明。' }, hint: { en: 'A hint.', zh: '提示。' }, ...extra,
+});
+const zigzag = game('zigzag', { alias: { z: ['2'], i: ['1'], g: ['9'], a: ['2', '0'] } });
 const toml = readFileSync(new URL('../wrangler.toml', import.meta.url), 'utf8');
-const out = mkdtempSync(join(tmpdir(), 'play-'));
-const { games, data } = await build(out, 'test'); // one build for the tests below
+const tmp = (name) => mkdtempSync(join(tmpdir(), `${name}-`));
+const config = loadConfig(); // the real one
+const out = tmp('play');
+const { data, styles: shipped } = await build(out, 'test', config); // what production ships
+// Answer-specific tests use a fixed puzzle, so they do not depend on the real answers.
+const fx = await build(tmp('play-fx'), 'test', { ...config, games: [zigzag] });
 
 /** Reference for the hint: maximum matching of tokens to distinct letters of the name. */
 function fitRef(tokens, { name, alias = {} }) {
@@ -42,7 +49,7 @@ test('zigzag accepts the plain name and the digit forms', () => {
 test('keys ignore order and case', () => assert.equal(key('ZiG'), key('gZi')));
 
 test('the hint table gives the same count as a maximum matching', async () => {
-  const tags = tagSet(data.tags);
+  const tags = tagSet(fx.data.tags);
   const alphabet = [...'zigzag2190eorst8qx'];
   let seed = 12345;
   const rnd = () => (seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648;
@@ -58,18 +65,19 @@ test('seal and open round-trip; a wrong set opens nothing', async () => {
   const [id, ct] = await seal('aggizz', { u: '/zigzag/' });
   assert.deepEqual(await open('aggizz', { [id]: ct }), { u: '/zigzag/' });
   assert.equal(await open('aggizy', { [id]: ct }), null);
-  for (const k of ['aggizz', key('221gga')]) assert.equal((await open(k, data.seals)).u, '/zigzag/');
+  for (const k of ['aggizz', key('221gga')]) assert.equal((await open(k, fx.data.seals)).u, '/zigzag/');
 });
 
 test('the pool is a shuffled bag with every needed token; clues decode', () => {
-  const pool = decode(data.pool);
-  assert.deepEqual([...pool].sort(), [...poolOf(games)].sort());
+  const pool = decode(fx.data.pool);
+  assert.deepEqual([...pool].sort(), [...poolOf(fx.games, config.puzzle.decoys)].sort());
   assert.notEqual(pool.slice(0, 6).join(''), 'zigzag');
-  assert.deepEqual(decode(Object.values(data.clues)[0]), games[0].hint);
+  assert.deepEqual(decode(Object.values(fx.data.clues)[0]), fx.games[0].hint);
 });
 
-test('games.json is valid and wrangler.toml matches it', () => {
-  assert.deepEqual(checkWrangler(load(), toml), []);
+test('portal.config.json is valid and wrangler.toml matches it', async () => {
+  assert.deepEqual(checkWrangler(config.games, toml), []);
+  assert.deepEqual(Object.keys(config.styles.enabled).sort(), (await loadStyles()).map((x) => x.id));
   assert.equal(binding('a-b'), 'GAME_A_B');
 });
 
@@ -83,7 +91,8 @@ test('the build ships no plain answer: no name, link, hint or letter list', () =
     ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js', 'style.js', 'theme.js']);
   for (const f of readdirSync(out).filter((n) => /\.(html|js|css|json)$/.test(n))) {
     const text = readFileSync(join(out, f), 'utf8');
-    for (const g of games) {
+    assert.ok(!text.includes('portal.config'), `${f} names the config`);
+    for (const g of config.games) { // also the disabled ones
       assert.ok(!new RegExp(`\\b${g.name}\\b`, 'i').test(text), `${f} contains "${g.name}"`);
       assert.ok(!text.includes(`/${g.slug}/`), `${f} contains the link of ${g.slug}`);
       assert.ok(!text.includes(g.hint.en) && !text.includes(g.hint.zh), `${f} contains a hint`);
@@ -99,10 +108,6 @@ test('accent contrast: blue passes, a light colour does not', () => {
 });
 
 // ---- the style set -------------------------------------------------------------------------
-const STYLE_IDS = [
-  'arcade', 'aurora', 'bauhaus', 'bento', 'blueprint', 'clay', 'gazette', 'lantern', 'orbit', 'rebus',
-  'sunrise', 'tiles',
-];
 const styleSrc = readFileSync(new URL('../src/style.js', import.meta.url), 'utf8');
 function runStyle(list, { search = '', date = new Date(2026, 10, 11) } = {}) {
   const attrs = {};
@@ -134,7 +139,7 @@ test('scope: every rule is scoped to its style; keyframes stay global; groups re
 
 test('the style set loads, is sorted and validated', async () => {
   const styles = await loadStyles();
-  assert.deepEqual(styles.map((x) => x.id), STYLE_IDS);
+  assert.deepEqual(styles.map((x) => x.id), Object.keys(config.styles.enabled).sort());
   for (const x of styles) {
     assert.ok(x.css.includes(`:root[data-style="${x.id}"]`), x.id);
     assert.ok(/^[\s\S]*:root\[data-style="[a-z-]+"\]\[data-theme="dark"\]/.test(x.css), `${x.id} has no dark mode`);
@@ -144,7 +149,6 @@ test('the style set loads, is sorted and validated', async () => {
 
 test('style validation: a broken style is reported, a good one is accepted', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'styles-'));
-  const { mkdirSync, writeFileSync } = await import('node:fs');
   const add = (id, meta, css = ':root{--a:1}', decor = {}) => {
     mkdirSync(join(dir, id), { recursive: true });
     writeFileSync(join(dir, id, 'style.json'), JSON.stringify(meta));
@@ -198,15 +202,88 @@ test('style.js: sets data-style and the browser colours; ?style= previews; empty
 test('the build ships every style: scoped css, inert decoration templates, the registry', () => {
   const css = readFileSync(join(out, 'portal.css'), 'utf8');
   const html = readFileSync(join(out, 'index.html'), 'utf8');
-  for (const id of STYLE_IDS) {
+  const on = Object.keys(config.styles.enabled).filter((id) => config.styles.enabled[id]);
+  assert.deepEqual(shipped.map((x) => x.id), on.sort());
+  for (const { id, decor } of shipped) {
     assert.ok(css.includes(`/* style: ${id} */`), id);
     assert.ok(html.includes(`"id":"${id}"`), id);
-  }
-  for (const id of ['arcade', 'aurora', 'blueprint', 'clay', 'gazette', 'lantern', 'orbit']) {
-    assert.ok(html.includes(`<template data-decor="${id}" data-slot="field">`), id);
-  }
-  for (const id of ['blueprint', 'gazette', 'lantern', 'rebus']) {
-    assert.ok(html.includes(`<template data-decor="${id}" data-slot="head">`), id);
+    for (const slot of Object.keys(decor)) {
+      assert.ok(html.includes(`<template data-decor="${id}" data-slot="${slot}">`), `${id} ${slot}`);
+    }
   }
   assert.ok(!/<template[^>]*>[^]*?\sstyle\s*=/.test(html), 'decoration must not use style attributes (CSP)');
+});
+
+// ---- the config ----------------------------------------------------------------------------
+const cheap = { ...config, games: [game('abc')] }; // one door: a build in a blink
+
+test('config validation: mistakes are reported, without letters; a disabled game may share a set', () => {
+  const dir = tmp('cfg');
+  const check = (cfg) => {
+    const file = join(dir, 'c.json');
+    writeFileSync(file, JSON.stringify(cfg));
+    try { loadConfig(file); } catch (e) { return e.message; }
+    return '';
+  };
+  const base = { styles: { enabled: { a: true } }, puzzle: { decoys: 'xy' }, games: [zigzag] };
+  assert.equal(check(base), '');
+  assert.match(check({ ...base, extra: 1 }), /unknown key "extra"/);
+  assert.match(check({ ...base, puzzle: { decoys: 'A!' } }), /puzzle\.decoys/);
+  assert.match(check({ ...base, styles: { enabled: { a: 'yes' } } }), /styles\.enabled\.a/);
+  assert.match(check({ ...base, games: [{ ...zigzag, hints: {} }] }), /unknown key "hints"/);
+  assert.match(check({ ...base, games: [{ ...zigzag, enabled: false }] }), /at least one game/);
+  const twin = { ...game('other'), name: 'zigzag' };
+  const msg = check({ ...base, games: [zigzag, twin] });
+  assert.match(msg, /shares an accepted letter set/);
+  assert.ok(!msg.includes('aggizz'), 'no letters in messages');
+  assert.equal(check({ ...base, games: [zigzag, { ...twin, enabled: false }] }), '');
+  assert.deepEqual(active([zigzag, { ...twin, enabled: false }]), [zigzag]);
+});
+
+test('selectStyles: config and folders must agree; a disabled style is dropped', () => {
+  const all = [{ id: 'a' }, { id: 'b' }];
+  assert.deepEqual(selectStyles(all, { a: true, b: false }).map((x) => x.id), ['a']);
+  assert.throws(() => selectStyles(all, { a: true }), /"b".*not in styles\.enabled/);
+  assert.throws(() => selectStyles(all, { a: true, b: true, c: true }), /"c".*no folder/);
+});
+
+test('a disabled style ships nothing: no css, template, registry entry or font', async () => {
+  const all = await loadStyles();
+  const off = all.find((x) => x.decor.field) ?? all[0];
+  const own = off.fonts.filter((f) => !all.some((y) => y !== off && y.fonts.includes(f)));
+  const dir = tmp('off');
+  await build(dir, 'test', { ...cheap, styles: { enabled: { ...config.styles.enabled, [off.id]: false } } });
+  const html = readFileSync(join(dir, 'index.html'), 'utf8');
+  assert.ok(!readFileSync(join(dir, 'portal.css'), 'utf8').includes(`style: ${off.id} `));
+  assert.ok(!html.includes(`"id":"${off.id}"`) && !html.includes(`data-decor="${off.id}"`));
+  assert.ok(html.includes(`"id":"${shipped[0].id === off.id ? shipped[1].id : shipped[0].id}"`));
+  for (const f of own) {
+    assert.ok(!readdirSync(join(dir, 'fonts')).includes(`${f}.woff2`), f);
+    assert.ok(!readFileSync(join(dir, 'fonts.css'), 'utf8').includes(`/fonts/${f}.woff2`), f);
+  }
+});
+
+test('with every style disabled the page falls back to the plain css', async () => {
+  const dir = tmp('none');
+  const enabled = Object.fromEntries(Object.keys(config.styles.enabled).map((id) => [id, false]));
+  await build(dir, 'test', { ...cheap, styles: { enabled } });
+  assert.ok(readFileSync(join(dir, 'index.html'), 'utf8').includes('id="styles">[]</script>'));
+  assert.ok(!readdirSync(dir).includes('fonts'));
+});
+
+test('a disabled game ships nothing: no door, seal, letter, hint or length', async () => {
+  const hidden = { ...game('qwxyk'), enabled: false, blurb: { en: 'Hidden blurb.', zh: '隐藏。' }, hint: { en: 'Hidden hint.', zh: '隐藏提示。' } };
+  const dir = tmp('game');
+  const res = await build(dir, 'test', { ...config, games: [game('abc'), hidden], puzzle: { decoys: '' } });
+  const html = readFileSync(join(dir, 'index.html'), 'utf8');
+  assert.equal(html.match(/<li class="game"/g).length, 1);
+  assert.deepEqual(res.data.lens, [3]);
+  assert.deepEqual([...decode(res.data.pool)].sort(), ['a', 'b', 'c']);
+  assert.equal(Object.keys(res.data.clues).length, 1);
+  assert.ok(!html.includes('Hidden'));
+});
+
+test('decoys come from the config', async () => {
+  const res = await build(tmp('decoy'), 'test', { ...cheap, puzzle: { decoys: '77' } });
+  assert.deepEqual([...decode(res.data.pool)].sort(), ['7', '7', 'a', 'b', 'c']);
 });
