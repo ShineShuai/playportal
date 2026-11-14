@@ -1,0 +1,7 @@
+{
+  "id": "clay",
+  "name": "Clay",
+  "themeColor": { "light": "#f6eee6", "dark": "#1d1830" },
+  "motion": { "type": "rise", "max": 12 },
+  "fonts": ["fredoka", "dm-sans"]
+}

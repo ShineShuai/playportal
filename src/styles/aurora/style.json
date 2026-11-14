@@ -1,0 +1,7 @@
+{
+  "id": "aurora",
+  "name": "Aurora",
+  "themeColor": { "light": "#eef0ff", "dark": "#070a1f" },
+  "motion": { "type": "rise", "max": 13 },
+  "fonts": ["outfit", "manrope"]
+}

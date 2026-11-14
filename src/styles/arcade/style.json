@@ -1,0 +1,7 @@
+{
+  "id": "arcade",
+  "name": "Arcade",
+  "themeColor": { "light": "#fdeaff", "dark": "#07021a" },
+  "motion": { "type": "rise", "max": 12 },
+  "fonts": ["sora"]
+}

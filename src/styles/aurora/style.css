@@ -1,0 +1,162 @@
+/* Aurora: frosted glass over a slow mesh of drifting light; letters are glass beads. */
+:root {
+  --page: #eef0ff; --surface: #fff; --ink: #1a1446; --text: #38326f; --muted: #57528a;
+  --line: rgba(26, 20, 70, .14); --line-strong: rgba(26, 20, 70, .32);
+  --free: #1a1446; --star: #6d3df0; --tile: #5b2fd6; --tilebg: rgba(109, 61, 240, .14);
+  --name: #5b2fd6; --on: #1a1446; --on-fg: #fff; --focus: #6d3df0;
+  --glass: rgba(255, 255, 255, .5); --rim: rgba(255, 255, 255, .8);
+  --shadow: 0 30px 60px -30px rgba(60, 40, 160, .45);
+  --ground: linear-gradient(160deg, #f6f2ff 0%, #e9f2ff 48%, #fff0f6 100%);
+  --b1: rgba(150, 120, 255, .6); --b2: rgba(80, 200, 255, .55);
+  --b3: rgba(255, 130, 190, .5); --b4: rgba(100, 230, 190, .5);
+  --title: linear-gradient(100deg, #1a1446 0%, #5b2fd6 48%, #c42b86 100%);
+  --k0: #7c5cff; --k1: #19b5d8; --k2: #12c29a; --k3: #ff5fa8;
+  --k4: #ffb020; --k5: #3b82f6; --k6: #ff7a59; --k7: #8bd630;
+  --bead: rgba(255, 255, 255, .22); --bead-fg: #1a1446;
+  --display: Outfit, ui-rounded, system-ui, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --body: Manrope, system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei",
+      sans-serif;
+  --r-ctl: .9rem; --r-lang: 1rem; --r-slot: 50%; --r-bar: 1.75rem;
+  --ch-op: 1; --pick-fg: #1a1446; --line-c: #7c3aed; --line-w: 2.5; --line-op: .85;
+}
+:root[data-theme="dark"] {
+  --page: #070a1f; --surface: #121850; --ink: #f4f6ff; --text: #dfe3ff; --muted: #aab2e6;
+  --line: rgba(255, 255, 255, .14); --line-strong: rgba(255, 255, 255, .34);
+  --free: #fff; --star: #7cf5d0; --tile: #7cf5d0; --tilebg: rgba(124, 245, 208, .14);
+  --name: #8ff7d8; --on: #fff; --on-fg: #0a0f2c; --focus: #7cf5d0;
+  --glass: rgba(20, 26, 78, .42); --rim: rgba(255, 255, 255, .22);
+  --shadow: 0 30px 60px -30px #000;
+  --ground: linear-gradient(160deg, #070a1f 0%, #0a1030 55%, #0b0a26 100%);
+  --b1: rgba(122, 92, 255, .55); --b2: rgba(37, 199, 255, .4);
+  --b3: rgba(255, 79, 216, .38); --b4: rgba(0, 229, 168, .42);
+  --title: linear-gradient(100deg, #fff 0%, #b9c4ff 42%, #8ff7d8 100%);
+  --bead: rgba(255, 255, 255, .06); --bead-fg: #fff; --pick-fg: #0a0f2c; --line-c: #7cf5d0;
+}
+body::after {
+  content: ""; position: fixed; inset: -25%; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(38% 34% at 22% 28%, var(--b1), transparent 70%),
+    radial-gradient(34% 30% at 78% 22%, var(--b2), transparent 70%),
+    radial-gradient(40% 36% at 70% 80%, var(--b3), transparent 70%),
+    radial-gradient(30% 28% at 18% 82%, var(--b4), transparent 70%);
+  animation: aurora-drift 40s ease-in-out infinite alternate; will-change: transform;
+}
+@keyframes aurora-drift {
+  from { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1); }
+  50% { transform: translate3d(2%, 3%, 0) rotate(5deg) scale(1.06); }
+  to { transform: translate3d(3%, -2%, 0) rotate(-4deg) scale(1.1); }
+}
+@keyframes aurora-float {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(3%, -5%, 0); }
+}
+h1 {
+  font-weight: 600; letter-spacing: -.035em; line-height: 1.02;
+  background: var(--title); -webkit-background-clip: text; background-clip: text;
+  color: transparent; -webkit-text-fill-color: transparent;
+}
+h1 .w1 {
+  display: block;
+  margin-bottom: .2em;
+  font-size: .5em;
+  font-weight: 300;
+  letter-spacing: .02em;
+}
+h1 .w2 { display: block; }
+.intro, .games {
+  padding: 1.5rem; border-radius: 1.75rem; background: var(--glass); border: 1px solid var(--rim);
+  box-shadow: var(--shadow), inset 0 1px 0 var(--rim);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6); backdrop-filter: blur(22px) saturate(1.6);
+}
+.intro h1 { margin-top: 0; }
+.count { background: var(--glass); border-color: var(--rim); }
+.games { margin: 0; }
+.game { padding: 0; border-top: 0; }
+.name { font-weight: 600; letter-spacing: -.02em; }
+.play {
+  background: linear-gradient(110deg, var(--accent), color-mix(in srgb, var(--accent) 55%,
+      #a21caf));
+}
+.bar { border-color: var(--rim); box-shadow: var(--shadow), inset 0 1px 0 var(--rim); }
+.tools { margin: 0; padding-top: 1rem; }
+#slots .slot {
+  border: 1px solid var(--rim); background: rgba(255, 255, 255, .22);
+  box-shadow: inset 0 2px 6px rgba(26, 20, 70, .12);
+}
+#slots button.slot {
+  color: var(--bead-fg); border-color: var(--rim);
+  background: radial-gradient(circle at 30% 24%, #fff 0%, rgba(255, 255, 255, .4) 30%,
+    color-mix(in srgb, var(--hue, var(--tile)) 45%, transparent) 100%);
+  box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--hue, var(--tile)) 85%, transparent);
+}
+:root[data-theme="dark"] #slots .slot { background: rgba(255, 255, 255, .06); box-shadow: none; }
+:root[data-theme="dark"] #slots button.slot {
+  background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, .5) 0%,
+    color-mix(in srgb, var(--hue, var(--tile)) 55%, transparent) 55%,
+    color-mix(in srgb, var(--hue, var(--tile)) 28%, transparent) 100%);
+}
+.ch { padding: 0; text-shadow: none; animation-duration: calc(var(--life) * 1.35); }
+.ch > span {
+  display: grid; place-items: center; width: 3.1rem; height: 3.1rem; border-radius: 50%;
+  color: var(--bead-fg); font: 600 1.4rem/1 var(--display);
+  border: 1px solid var(--rim);
+  background: radial-gradient(circle at 30% 24%, #fff 0%, rgba(255, 255, 255, .5) 24%,
+    color-mix(in srgb, var(--hue) 30%, var(--bead)) 72%, color-mix(in srgb, var(--hue) 48%,
+        var(--bead)) 100%);
+  box-shadow: inset 0 -8px 14px color-mix(in srgb, var(--hue) 35%, transparent),
+    0 14px 26px -10px color-mix(in srgb, var(--hue) 85%, transparent);
+}
+:root[data-theme="dark"] .ch > span {
+  background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, .55) 0%, rgba(255, 255, 255,
+      .08) 26%,
+    color-mix(in srgb, var(--hue) 40%, var(--bead)) 72%, color-mix(in srgb, var(--hue) 62%,
+        var(--bead)) 100%);
+}
+.pick {
+  border: 2px solid #fff; font-weight: 600; text-shadow: none;
+  background: radial-gradient(circle at 30% 24%, #fff 0%, color-mix(in srgb, var(--hue) 55%,
+      #fff) 55%, var(--hue) 100%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--hue) 38%, transparent),
+    0 0 34px color-mix(in srgb, var(--hue) 85%, transparent);
+}
+#trail { filter: drop-shadow(0 0 5px var(--line-c)); }
+#decor-field .orb {
+  position: absolute; border-radius: 50%; border: 1px solid var(--rim);
+  background: radial-gradient(circle at 30% 24%, rgba(255, 255, 255, .85) 0%, rgba(255, 255, 255,
+      0) 38%),
+    radial-gradient(circle, color-mix(in srgb, var(--oc) 10%, transparent) 40%,
+      color-mix(in srgb, var(--oc) 42%, transparent) 100%);
+  box-shadow: inset 0 -22px 44px color-mix(in srgb, var(--oc) 28%, transparent),
+    0 40px 70px -40px color-mix(in srgb, var(--oc) 90%, transparent);
+  animation: aurora-float 16s ease-in-out infinite alternate;
+}
+#decor-field .o1 {
+  --oc: var(--k0);
+  left: 10%;
+  top: 14%;
+  width: calc(var(--d) * .38);
+  aspect-ratio: 1;
+}
+#decor-field .o2 {
+  --oc: var(--k3); right: 8%; top: 46%; width: calc(var(--d) * .26); aspect-ratio: 1;
+  animation-duration: 21s; animation-direction: alternate-reverse;
+}
+#decor-field .o3 {
+  --oc: var(--k1); left: 30%; bottom: 6%; width: calc(var(--d) * .2); aspect-ratio: 1;
+  animation-duration: 12s;
+}
+@media (min-width: 900px) {
+  header { padding: 1.5rem 3rem 0; }
+  main { margin-left: 3rem; max-width: 33rem; gap: 1rem; padding-top: 1rem; }
+  h1 { font-size: clamp(2.8rem, 4.2vw, 3.8rem); }
+  .bar { margin: 0; }
+  #field { inset: 0 0 0 calc(3rem + 33rem + 2rem); -webkit-mask-image: none; mask-image: none; }
+}
+@media (max-width: 899.98px) {
+  main { gap: .9rem; }
+  #field { margin: 0 -1.25rem; flex: 1 0 auto; height: 17rem; min-height: 0;
+  } /* definite: cq units */
+}
+@media (prefers-reduced-motion: reduce) {
+  body::after, #decor-field .orb { animation: none; }
+}

@@ -99,6 +99,7 @@ test('accent contrast: blue passes, a light colour does not', () => {
 });
 
 // ---- the style set -------------------------------------------------------------------------
+const STYLE_IDS = ['arcade', 'aurora', 'bauhaus', 'bento', 'clay', 'orbit', 'rebus', 'sunrise', 'tiles'];
 const styleSrc = readFileSync(new URL('../src/style.js', import.meta.url), 'utf8');
 function runStyle(list, { search = '', date = new Date(2026, 10, 11) } = {}) {
   const attrs = {};
@@ -130,7 +131,7 @@ test('scope: every rule is scoped to its style; keyframes stay global; groups re
 
 test('the style set loads, is sorted and validated', async () => {
   const styles = await loadStyles();
-  assert.deepEqual(styles.map((x) => x.id), ['bauhaus', 'bento', 'orbit', 'rebus', 'sunrise', 'tiles']);
+  assert.deepEqual(styles.map((x) => x.id), STYLE_IDS);
   for (const x of styles) {
     assert.ok(x.css.includes(`:root[data-style="${x.id}"]`), x.id);
     assert.ok(/^[\s\S]*:root\[data-style="[a-z-]+"\]\[data-theme="dark"\]/.test(x.css), `${x.id} has no dark mode`);
@@ -194,11 +195,13 @@ test('style.js: sets data-style and the browser colours; ?style= previews; empty
 test('the build ships every style: scoped css, inert decoration templates, the registry', () => {
   const css = readFileSync(join(out, 'portal.css'), 'utf8');
   const html = readFileSync(join(out, 'index.html'), 'utf8');
-  for (const id of ['bauhaus', 'bento', 'orbit', 'rebus', 'sunrise', 'tiles']) {
+  for (const id of STYLE_IDS) {
     assert.ok(css.includes(`/* style: ${id} */`), id);
     assert.ok(html.includes(`"id":"${id}"`), id);
   }
-  assert.ok(html.includes('<template data-decor="orbit" data-slot="field">'));
+  for (const id of ['arcade', 'aurora', 'clay', 'orbit']) {
+    assert.ok(html.includes(`<template data-decor="${id}" data-slot="field">`), id);
+  }
   assert.ok(html.includes('<template data-decor="rebus" data-slot="head">'));
   assert.ok(!/<template[^>]*>[^]*?\sstyle\s*=/.test(html), 'decoration must not use style attributes (CSP)');
 });

@@ -44,6 +44,8 @@ style has a light and a dark mode. The set is the folders of `src/styles/`; noth
   decoration. They are inert `<template>`s, no `style=`, `<script>` or `on*` (the content security
   policy blocks them): position things with classes in `style.css`. `{{TOTAL}}` is the number of
   games; `<b class="found">0</b>` is kept up to date. In `#decor-field`, `--d` is the smaller side of the sky.
+  On mobile `--d` is 0 unless the style gives `#field` a definite height
+  (`flex: 1 0 auto; height: 17rem; min-height: 0`): the base `min-height` alone is not enough.
 
 Tokens a style sets (all optional): colours `--page --surface --ink --text --muted --line
 --line-strong --glass --shadow --ground` (page background), letters `--free` (drifting) and `--star`

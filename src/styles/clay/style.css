@@ -1,0 +1,153 @@
+/* Clay: soft, puffy toys on a warm tabletop. Letters are clay beads that bob up like bubbles. */
+:root {
+  --page: #f6eee6; --surface: #fffaf5; --ink: #3d2b2a; --text: #5a4543; --muted: #725b58;
+  --line: rgba(90, 50, 40, .14); --line-strong: rgba(90, 50, 40, .32);
+  --free: #3d2b2a; --star: #c92f52; --tile: #c92f52; --tilebg: rgba(201, 47, 82, .12);
+  --name: #c92f52;
+  --on: #3d2b2a; --on-fg: #fff; --focus: #3d2b2a; --glass: #fffaf5; --shadow: var(--card-sh);
+  --ground:
+    radial-gradient(40rem 30rem at 88% 8%, rgba(255, 214, 230, .8), transparent 70%),
+    radial-gradient(36rem 28rem at 0% 100%, rgba(208, 238, 224, .8), transparent 70%), #f6eee6;
+  --k0: #ff8fa3; --k1: #ffc46b; --k2: #8fd9b6; --k3: #9ab8ff;
+  --k4: #c9a7ff; --k5: #ff9f7a; --k6: #7fd6e6; --k7: #f4e07a;
+  --glyph: #3d2b2a; --hi: rgba(255, 255, 255, .9); --lo: rgba(120, 60, 50, .2);
+  --drop: rgba(120, 60, 50, .34);
+  --puff: inset 0 5px 7px var(--hi), inset 0 -8px 12px var(--lo), 0 14px 20px -10px var(--drop);
+  --card-sh: inset 0 4px 6px var(--hi), inset 0 -10px 18px rgba(120, 60, 50, .07),
+      0 28px 36px -24px var(--drop);
+  --well: inset 0 4px 8px rgba(120, 60, 50, .22), inset 0 -2px 0 var(--hi);
+  --display: Fredoka, ui-rounded, "SF Pro Rounded", system-ui, "PingFang SC", "Microsoft YaHei",
+      sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei",
+      sans-serif;
+  --bw: 0px; --r-ctl: 999px; --r-lang: 999px; --r-slot: 50%; --r-bar: 2rem; --r-count: 999px;
+  --sh-ctl: var(--puff); --sh-bar: var(--card-sh); --ch-op: 1; --pick-fg: var(--glyph);
+  --line-c: var(--star); --line-w: 5; --line-op: .75; --line-dash: .1 11;
+}
+:root[data-theme="dark"] {
+  --page: #1d1830; --surface: #2a2342; --ink: #fbeee6; --text: #e7d8d4; --muted: #bba9bd;
+  --line: rgba(255, 235, 225, .14); --line-strong: rgba(255, 235, 225, .32);
+  --free: #fbeee6; --star: #ff8fa3; --tile: #ff8fa3; --tilebg: rgba(255, 143, 163, .16);
+  --name: #ff9fb0;
+  --on: #fbeee6; --on-fg: #2a1a2a; --focus: #ffc46b; --glass: #2a2342;
+  --ground:
+    radial-gradient(40rem 30rem at 88% 8%, rgba(160, 90, 200, .3), transparent 70%),
+    radial-gradient(36rem 28rem at 0% 100%, rgba(60, 150, 140, .22), transparent 70%), #1d1830;
+  --hi: rgba(255, 255, 255, .2); --lo: rgba(0, 0, 0, .35); --drop: rgba(0, 0, 0, .6);
+  --card-sh: inset 0 3px 5px var(--hi), inset 0 -10px 18px rgba(0, 0, 0, .25),
+      0 28px 36px -24px var(--drop);
+  --well: inset 0 4px 8px rgba(0, 0, 0, .45), inset 0 -2px 0 rgba(255, 255, 255, .08);
+}
+h1 {
+  font-weight: 600;
+  letter-spacing: -.01em;
+  text-shadow: 0 2px 0 var(--hi), 0 8px 14px var(--lo);
+}
+html[data-lang="zh"] h1 { letter-spacing: 0; }
+h1 .w2 { color: var(--star); }
+.intro, .games {
+  margin: 0; padding: 1.5rem; border-radius: 2rem; background: var(--surface);
+  box-shadow: var(--card-sh);
+}
+.intro h1 { margin-top: 0; }
+.games { padding: 1.25rem 1.5rem; }
+.game { padding: 0; border-top: 0; }
+.count { background: var(--surface); box-shadow: var(--well); }
+.blurb { font-family: var(--display); font-weight: 500; }
+.name { font-weight: 600; }
+.play {
+  background: var(--accent); box-shadow: var(--puff), 0 14px 24px -10px var(--accent);
+  font-family: var(--display); font-weight: 600;
+  transition: transform .25s cubic-bezier(.3, 1.7, .5, 1);
+}
+.play:hover { transform: translateY(-2px) scale(1.05); }
+.play:active { transform: scale(.97); }
+.langs { background: var(--surface); box-shadow: var(--puff); }
+.icon, #pause, #know, #clear { background: var(--surface); }
+#clear { box-shadow: none; background: none; }
+.bar { border: 0; }
+.tools { margin: 0; }
+#slots .slot { border: 0; background: rgba(120, 60, 50, .06); box-shadow: var(--well); }
+:root[data-theme="dark"] #slots span.slot { background: rgba(0, 0, 0, .18); }
+#slots button.slot {
+  color: var(--glyph); font-family: var(--display); font-weight: 600;
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--hue, var(--k0)) 55%,
+      #fff),
+    var(--hue, var(--k0)) 58%, color-mix(in srgb, var(--hue, var(--k0)) 80%, #6a3028) 100%);
+  box-shadow: var(--puff);
+}
+#shelf button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--puff);
+}
+#name { border: 0; background: var(--surface); box-shadow: var(--well); }
+.ch { padding: 0; text-shadow: none; }
+.ch > span {
+  display: grid; place-items: center; width: 3.3rem; height: 3.3rem; border-radius: 50%;
+  color: var(--glyph); font: 600 1.55rem/1 var(--display);
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--hue) 55%, #fff),
+    var(--hue) 58%, color-mix(in srgb, var(--hue) 80%, #6a3028) 100%);
+  box-shadow: var(--puff), 0 0 0 3px color-mix(in srgb, var(--surface) 70%, transparent);
+}
+.ch:hover > span, .ch:focus-visible > span { scale: 1.1; }
+.pick {
+  width: 3.4rem; height: 3.4rem; border: 0; text-shadow: none; font-weight: 600;
+  background: radial-gradient(circle at 32% 26%, color-mix(in srgb, var(--hue) 55%, #fff),
+    var(--hue) 58%, color-mix(in srgb, var(--hue) 80%, #6a3028) 100%);
+  box-shadow: var(--puff), 0 0 0 4px var(--surface), 0 0 0 7px var(--hue);
+}
+@keyframes clay-bob {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(1.5%, -4%, 0); }
+}
+#decor-field .clay {
+  position: absolute; display: block;
+  box-shadow: inset 0 calc(var(--d) * .018) calc(var(--d) * .03) var(--hi),
+    inset 0 calc(var(--d) * -.04) calc(var(--d) * .06) var(--lo),
+    0 calc(var(--d) * .06) calc(var(--d) * .07) calc(var(--d) * -.04) var(--drop);
+  animation: clay-bob 11s ease-in-out infinite alternate;
+}
+#decor-field .c1 {
+  left: 0; top: 12%; width: calc(var(--d) * .5); aspect-ratio: 1; border-radius: 50%;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--k0) 80%, #fff), var(--k0));
+}
+#decor-field .c2 {
+  right: 6%; top: 6%; width: calc(var(--d) * .34); aspect-ratio: 1; border-radius: 50%;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--k2) 80%, #fff), var(--k2));
+  animation-duration: 15s; animation-direction: alternate-reverse;
+}
+#decor-field .c2::after {
+  content: ""; position: absolute; inset: 29%; border-radius: 50%; background: var(--page);
+  box-shadow: inset 0 calc(var(--d) * .02) calc(var(--d) * .035) var(--lo), 0 1px 0 var(--hi);
+}
+#decor-field .c3 {
+  left: 20%; bottom: 5%; width: calc(var(--d) * .3); aspect-ratio: 1; border-radius: 34%;
+  rotate: 14deg;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--k1) 80%, #fff), var(--k1));
+  animation-duration: 13s;
+}
+#decor-field .c4 {
+  right: 12%; bottom: 12%; width: calc(var(--d) * .15); height: calc(var(--d) * .36);
+  border-radius: 999px;
+  rotate: -24deg; background: linear-gradient(150deg, color-mix(in srgb, var(--k4) 80%, #fff),
+      var(--k4));
+  animation-duration: 17s;
+}
+@media (min-width: 900px) {
+  header { padding: 1.5rem 3rem 0; }
+  main { margin-left: 3rem; max-width: 33rem; gap: 1.1rem; padding-top: 1rem; }
+  h1 { font-size: clamp(2.6rem, 3.8vw, 3.5rem); }
+  .bar { margin: 0; }
+  #field { inset: 0 0 0 calc(3rem + 33rem + 2rem); -webkit-mask-image: none; mask-image: none; }
+}
+@media (max-width: 899.98px) {
+  main { gap: .9rem; }
+  #field { margin: 0 -1.25rem; flex: 1 0 auto; height: 17rem; min-height: 0;
+  } /* definite: cq units */
+}
+@media (prefers-reduced-motion: reduce) {
+  #decor-field .clay { animation: none; }
+  .play { transition: none; }
+}
