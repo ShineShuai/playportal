@@ -49,7 +49,7 @@ function checkGame(g, errors) {
   }
 }
 
-/** { styles: { enabled }, puzzle: { decoys }, games }: all games, also the disabled ones. */
+/** { styles: { enabled }, puzzle: { decoys, revision }, games }: all games, also the disabled ones. */
 export function loadConfig(file = CONFIG) {
   const cfg = JSON.parse(readFileSync(file, 'utf8'));
   const errors = [];
@@ -68,9 +68,12 @@ export function loadConfig(file = CONFIG) {
     }
   }
 
-  unknown(cfg.puzzle, ['decoys'], 'puzzle');
+  unknown(cfg.puzzle, ['decoys', 'revision'], 'puzzle');
   if (typeof cfg.puzzle?.decoys !== 'string' || !/^[a-z0-9]*$/.test(cfg.puzzle.decoys)) {
     errors.push('puzzle.decoys must be a string of a-z, 0-9');
+  }
+  if (!Number.isInteger(cfg.puzzle?.revision) || cfg.puzzle.revision < 0) {
+    errors.push('puzzle.revision must be an integer >= 0: raise it whenever an answer changes');
   }
 
   const games = cfg.games;

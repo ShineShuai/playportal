@@ -28,7 +28,7 @@ open the sealed links and the hash table; that is accepted. `/<slug>/` stays pub
 ## Config (`portal.config.json`, repo root)
 ```json
 { "styles": { "enabled": { "arcade": true, "rebus": false } },
-  "puzzle": { "decoys": "eorst8" },
+  "puzzle": { "decoys": "eorst8", "revision": 0 },
   "games": [{ "slug": "zigzag", "enabled": true, "name": "zigzag", "worker": "zigzag-site",
               "accent": "#3b68ee", "alias": { "z": ["2"] }, "blurb": {...}, "hint": {...} }] }
 ```
@@ -37,10 +37,14 @@ open the sealed links and the hash table; that is accepted. `/<slug>/` stays pub
   The build fails on a folder that is not listed and on an id without a folder. Disabling a style
   changes which style falls on which day.
 - `puzzle.decoys`: extra letters that drift, besides those the names and aliases need.
+- `puzzle.revision`: integer >= 0, required. Raise it whenever an answer (`name`, `alias`) changes:
+  players who opened the old door keep it otherwise (their browser saved it, with the old name).
+  A new value saves the doors under a new key, so everyone starts with all doors locked. 0 is the
+  original key, so the first deploy keeps today's doors. Only ever raise it: going back to an old
+  value brings the old doors back.
 - `games[]`: `enabled: false` hides the game from the portal (no door, seal, letter or hint); its
   `/<slug>/` route stays, so `wrangler.toml` is unchanged. Unknown keys are errors. At least one
-  game must be on. To change an answer edit `name`, `alias` and `hint`; players who opened the old
-  door keep it (it is saved in their browser).
+  game must be on. To change an answer edit `name`, `alias` and `hint`, and raise `puzzle.revision`.
 - The repo is public and so is the config in it. Production only keeps the answers out of
   view-source (see above). `npm test` fails when the config, a disabled game's letters or hint,
   or the config's file name show up in `dist/`. Error messages name slugs and fields, never letters.

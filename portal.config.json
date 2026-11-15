@@ -16,7 +16,8 @@
     }
   },
   "puzzle": {
-    "decoys": "eorst8"
+    "decoys": "eorst8",
+    "revision": 0
   },
   "games": [
     {

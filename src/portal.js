@@ -1,4 +1,4 @@
-import { decode, fitOf, key, open, tagSet } from './match.js';
+import { decode, fitOf, key, open, tagSet, unlockedKey } from './match.js';
 
 // Static page, no requests: an answer exists here only as ciphertext, hashes or encoded text.
 const $ = (s, r = document) => r.querySelector(s);
@@ -41,7 +41,8 @@ const kOf = (t) => ((t.charCodeAt(0) * 5) ^ (t.charCodeAt(0) >> 3)) % 8; // one 
 let tray = [];  // collected letters: the only row of slots
 let trail = []; // the caught letters that stay in the sky {x, y, el}, in tray order (null: none)
 let fails = 0;
-const unlocked = store.get('portal.unlocked', {});
+const UNLOCKED = unlockedKey(data.rev);
+const unlocked = store.get(UNLOCKED, {});
 
 // ---- tray, trail and hint -----------------------------------------------------------------
 const hideFit = () => { $('#fit').hidden = true; };
@@ -190,7 +191,7 @@ function reveal({ i, n, u }, fresh) {
 
 function unlock(hit) {
   unlocked[hit.i] = hit;
-  store.set('portal.unlocked', unlocked);
+  store.set(UNLOCKED, unlocked);
   reveal(hit, true);
   say(tx('unlocked', { n: hit.n }));
 }

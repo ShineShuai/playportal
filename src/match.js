@@ -7,6 +7,9 @@ export const SALT = 'play:v1';
 export const ITER = 100_000;
 export const TAG_BYTES = 5;
 
+/** Where the opened doors are saved. Raising the config's `revision` starts everyone fresh;
+ *  0 keeps the original key, so the first deploy keeps the doors players already opened. */
+export const unlockedKey = (rev) => (rev ? `portal.unlocked.${rev}` : 'portal.unlocked');
 export const key = (tokens) => [...tokens].map((t) => t.toLowerCase()).sort().join('');
 export const hex = (b) => [...b].map((x) => x.toString(16).padStart(2, '0')).join('');
 export const b64 = (b) => {

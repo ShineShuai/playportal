@@ -16,7 +16,7 @@ const bi = (o) => `<span lang="en">${esc(o.en)}</span><span lang="zh">${esc(o.zh
 export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev', config = loadConfig()) {
   const games = active(config.games);
   const styles = selectStyles(await loadStyles(), config.styles.enabled);
-  const data = await buildData(games, cardId, config.puzzle.decoys);
+  const data = { ...(await buildData(games, cardId, config.puzzle.decoys)), rev: config.puzzle.revision };
   const teasers = games.map((g) => {
     const n = g.name.length;
     return `<li class="game" data-id="${cardId(g.slug)}" data-accent="${g.accent ?? '#3b68ee'}">

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import vm from 'node:vm';
-import { decode, fitOf, key, open, seal, tagSet } from '../src/match.js';
+import { decode, fitOf, key, open, seal, tagSet, unlockedKey } from '../src/match.js';
 import { build } from '../tools/build.js';
 import { active, binding, checkWrangler, contrastOnWhite, loadConfig } from '../tools/manifest.js';
 import { accepted, poolOf } from '../tools/seal.js';
@@ -86,7 +86,7 @@ test('wrangler check reports a missing game', () => {
 });
 
 test('the build ships no plain answer: no name, link, hint or letter list', () => {
-  assert.deepEqual(Object.keys(data).sort(), ['clues', 'lens', 'pool', 'seals', 'tags']);
+  assert.deepEqual(Object.keys(data).sort(), ['clues', 'lens', 'pool', 'rev', 'seals', 'tags']);
   assert.deepEqual(readdirSync(out).filter((f) => !f.startsWith('fonts')).sort(),
     ['.assetsignore', '_headers', 'build.json', 'index.html', 'lang.js', 'match.js', 'portal.css', 'portal.js', 'style.js', 'theme.js']);
   for (const f of readdirSync(out).filter((n) => /\.(html|js|css|json)$/.test(n))) {
@@ -225,10 +225,13 @@ test('config validation: mistakes are reported, without letters; a disabled game
     try { loadConfig(file); } catch (e) { return e.message; }
     return '';
   };
-  const base = { styles: { enabled: { a: true } }, puzzle: { decoys: 'xy' }, games: [zigzag] };
+  const base = { styles: { enabled: { a: true } }, puzzle: { decoys: 'xy', revision: 0 }, games: [zigzag] };
   assert.equal(check(base), '');
   assert.match(check({ ...base, extra: 1 }), /unknown key "extra"/);
-  assert.match(check({ ...base, puzzle: { decoys: 'A!' } }), /puzzle\.decoys/);
+  assert.match(check({ ...base, puzzle: { ...base.puzzle, decoys: 'A!' } }), /puzzle\.decoys/);
+  for (const revision of [undefined, -1, 1.5, '2']) {
+    assert.match(check({ ...base, puzzle: { decoys: 'xy', revision } }), /puzzle\.revision/);
+  }
   assert.match(check({ ...base, styles: { enabled: { a: 'yes' } } }), /styles\.enabled\.a/);
   assert.match(check({ ...base, games: [{ ...zigzag, hints: {} }] }), /unknown key "hints"/);
   assert.match(check({ ...base, games: [{ ...zigzag, enabled: false }] }), /at least one game/);
@@ -274,7 +277,7 @@ test('with every style disabled the page falls back to the plain css', async () 
 test('a disabled game ships nothing: no door, seal, letter, hint or length', async () => {
   const hidden = { ...game('qwxyk'), enabled: false, blurb: { en: 'Hidden blurb.', zh: '隐藏。' }, hint: { en: 'Hidden hint.', zh: '隐藏提示。' } };
   const dir = tmp('game');
-  const res = await build(dir, 'test', { ...config, games: [game('abc'), hidden], puzzle: { decoys: '' } });
+  const res = await build(dir, 'test', { ...config, games: [game('abc'), hidden], puzzle: { ...config.puzzle, decoys: '' } });
   const html = readFileSync(join(dir, 'index.html'), 'utf8');
   assert.equal(html.match(/<li class="game"/g).length, 1);
   assert.deepEqual(res.data.lens, [3]);
@@ -284,6 +287,15 @@ test('a disabled game ships nothing: no door, seal, letter, hint or length', asy
 });
 
 test('decoys come from the config', async () => {
-  const res = await build(tmp('decoy'), 'test', { ...cheap, puzzle: { decoys: '77' } });
+  const res = await build(tmp('decoy'), 'test', { ...cheap, puzzle: { ...config.puzzle, decoys: '77' } });
   assert.deepEqual([...decode(res.data.pool)].sort(), ['7', '7', 'a', 'b', 'c']);
+});
+
+test('revision: shipped with the data; 0 keeps the old key, a raise starts everyone fresh', async () => {
+  assert.equal(data.rev, config.puzzle.revision);
+  const res = await build(tmp('rev'), 'test', { ...cheap, puzzle: { ...config.puzzle, revision: 3 } });
+  assert.equal(res.data.rev, 3);
+  assert.equal(unlockedKey(0), 'portal.unlocked');
+  assert.equal(unlockedKey(3), 'portal.unlocked.3');
+  assert.notEqual(unlockedKey(3), unlockedKey(4));
 });
