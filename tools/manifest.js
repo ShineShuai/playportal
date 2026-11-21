@@ -49,14 +49,17 @@ function checkGame(g, errors) {
   }
 }
 
-/** { styles: { enabled }, puzzle: { decoys, revision }, games }: all games, also the disabled ones. */
+/**
+ * { styles: { enabled }, puzzle: { decoys, revision }, analytics?: { token }, games }:
+ * all games, also the disabled ones.
+ */
 export function loadConfig(file = CONFIG) {
   const cfg = JSON.parse(readFileSync(file, 'utf8'));
   const errors = [];
   const unknown = (o, keys, at) => {
     for (const k of Object.keys(o ?? {})) if (!keys.includes(k)) errors.push(`${at}: unknown key "${k}"`);
   };
-  unknown(cfg, ['styles', 'puzzle', 'games'], 'config');
+  unknown(cfg, ['styles', 'puzzle', 'analytics', 'games'], 'config');
 
   const enabled = cfg.styles?.enabled;
   unknown(cfg.styles, ['enabled'], 'styles');
@@ -74,6 +77,13 @@ export function loadConfig(file = CONFIG) {
   }
   if (!Number.isInteger(cfg.puzzle?.revision) || cfg.puzzle.revision < 0) {
     errors.push('puzzle.revision must be an integer >= 0: raise it whenever an answer changes');
+  }
+
+  unknown(cfg.analytics, ['token'], 'analytics');
+  const token = cfg.analytics?.token ?? '';
+  if (typeof token !== 'string' || (token && !/^[0-9a-z]{16,64}$/i.test(token))) {
+    errors.push('analytics.token must be empty (off) or the token of the Web Analytics snippet: '
+      + '16-64 letters and digits');
   }
 
   const games = cfg.games;

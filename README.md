@@ -14,7 +14,8 @@ small puzzle, plus the router that serves the games under `/<slug>/`.
 ## How the puzzle works
 Letters (and look-alike digits, `alias` in `portal.config.json`) drift over the page. Collecting a
 multiset of tokens that spells a game name opens it; typing the name does the same. Order does
-not matter. The page is static and makes no requests (`default-src 'none'` in `src/_headers`).
+not matter. The page is static and makes no requests (`default-src 'none'` in `src/_headers`),
+except the optional visit counter (see "Visit counting").
 `npm run build` seals everything that is an answer:
 - the links: AES-GCM ciphertext, key from PBKDF2 of the token multiset, one entry per accepted multiset;
 - the hint "4 of 6 letters fit · 2 to swap": 5-byte hashes of every sub-multiset of every accepted
@@ -91,6 +92,19 @@ Fonts are optional and self-hosted (SIL OFL): `npm i --no-save @fontsource-varia
 `npm run fonts` copies what the styles ask for into `src/fonts/` (it prints the missing packages).
 The build ships only the fonts of enabled styles. Without the files the page uses system fonts.
 There are no external requests either way.
+
+## Visit counting (optional)
+Cloudflare Web Analytics, a cookieless visit counter, installed by hand: the page bytes stay what
+the build wrote (the smoke test compares them). `analytics.token` in `portal.config.json`:
+- empty: off. No tag, and the CSP stays `default-src 'none'`.
+- the token of the snippet: the build adds the tag after `portal.js`, the beacon script to
+  `script-src` and `connect-src https://cloudflareinsights.com` to the CSP, nothing else.
+
+Get the token in the dashboard: Analytics & Logs -> Web Analytics -> the site `vintoshine.com`
+-> "Enable with JS Snippet installation"; copy the value of `"token"` from the snippet. It is
+public (it ships in every page), so it lives in git. The zigzag repo uses the same token.
+Keep the dashboard on "JS Snippet installation": with automatic injection on, the page would count
+twice (the smoke test wants exactly one tag). `npm run dev` never counts.
 
 ## Add a game
 1. The game deploys as its own Worker with `workers_dev = false`, assets under `<slug>/`.
