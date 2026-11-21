@@ -19,6 +19,9 @@
     "decoys": "eorst8",
     "revision": 0
   },
+  "analytics": {
+    "token": "303dc968edb14e23ab656915a1781e58"
+  },
   "games": [
     {
       "slug": "zigzag",

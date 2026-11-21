@@ -299,3 +299,59 @@ test('revision: shipped with the data; 0 keeps the old key, a raise starts every
   assert.equal(unlockedKey(3), 'portal.unlocked.3');
   assert.notEqual(unlockedKey(3), unlockedKey(4));
 });
+
+const token = '0123456789abcdef0123456789abcdef';
+const beacon = 'https://static.cloudflareinsights.com/beacon.min.js';
+const headersOf = (dir) => readFileSync(join(dir, '_headers'), 'utf8');
+const policy = (dir) => headersOf(dir).match(/Content-Security-Policy: (.*)/)[1];
+const pageOf = (dir) => readFileSync(join(dir, 'index.html'), 'utf8');
+const placeholderFree = (dir) => !pageOf(dir).includes('{{') && !headersOf(dir).includes('{{');
+const STRICT = "default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; "
+  + "font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const CONNECT = '; connect-src https://cloudflareinsights.com';
+
+test('analytics off (empty token): no tag, no extra CSP source, the page as before', async () => {
+  const dir = tmp('wa-off');
+  await build(dir, 'test', { ...cheap, analytics: { token: '' } });
+  assert.ok(!pageOf(dir).includes('cloudflareinsights'));
+  assert.equal(policy(dir), STRICT);
+  assert.ok(placeholderFree(dir));
+});
+
+test('analytics on: one tag after the page script; the CSP gains its script and host', async () => {
+  const dir = tmp('wa-on');
+  await build(dir, 'test', { ...cheap, analytics: { token } });
+  const html = pageOf(dir);
+  const attrs = `src="${beacon}" data-cf-beacon='{"token": "${token}"}'`;
+  const tag = `<script type="module" ${attrs}></script>`;
+  assert.equal(html.split('cloudflareinsights').length - 1, 1);
+  assert.ok(html.includes(`<script type="module" src="/portal.js"></script>${tag}\n</body>`));
+  const csp = policy(dir);
+  assert.ok(csp.includes("default-src 'none'") && csp.includes(`script-src 'self' ${beacon};`));
+  assert.ok(csp.endsWith(`frame-ancestors 'none'${CONNECT}`));
+  assert.equal(csp.replace(` ${beacon}`, '').replace(CONNECT, ''), STRICT); // nothing else changes
+});
+
+test('the real config: no placeholder is left, and the tag is there only with a token', () => {
+  assert.ok(placeholderFree(out));
+  assert.equal(pageOf(out).split(beacon).length - 1, config.analytics?.token ? 1 : 0);
+});
+
+test('config validation: analytics.token is empty or the token of the snippet', () => {
+  const dir = tmp('wa-cfg');
+  const base = {
+    styles: { enabled: { a: true } }, puzzle: { decoys: 'xy', revision: 0 }, games: [zigzag],
+  };
+  const check = (analytics) => {
+    const file = join(dir, 'c.json');
+    const cfg = analytics === undefined ? base : { ...base, analytics };
+    writeFileSync(file, JSON.stringify(cfg));
+    try { loadConfig(file); } catch (e) { return e.message; }
+    return '';
+  };
+  for (const ok of [undefined, {}, { token: '' }, { token }]) assert.equal(check(ok), '');
+  for (const bad of ['short', `${token}!`, "'}'><script>", 7]) {
+    assert.match(check({ token: bad }), /analytics\.token/);
+  }
+  assert.match(check({ token, extra: 1 }), /unknown key "extra"/);
+});

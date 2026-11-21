@@ -36,4 +36,18 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "$base/_headers?cb=$cb")
 headers=$(curl -sSI "$base/?cb=$cb")
 grep -qi '^x-content-type-options: *nosniff' <<< "$headers" || fail "nosniff header missing"
 grep -qi '^content-security-policy:.*frame-ancestors' <<< "$headers" || fail "CSP header missing"
+
+token=$(node -p "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).analytics?.token ?? ''" \
+  portal.config.json)
+if [ -n "$token" ]; then   # Web Analytics is installed by hand: one tag, the CSP lets it load
+  tags=$(curl -fsSL -H 'Accept: text/html' "$base/?cb=$cb" |
+    grep -o '<script[^>]*beacon\.min\.js' | wc -l)
+  [ "$tags" = 1 ] ||
+    fail "the portal page has $tags Web Analytics tags, expected 1 (automatic injection on?)"
+  fetch "$base/" | grep -qF "data-cf-beacon='{\"token\": \"$token\"}'" ||
+    fail "the Web Analytics tag does not carry the token of portal.config.json"
+  grep -qi '^content-security-policy:.*static\.cloudflareinsights\.com/beacon\.min\.js' \
+    <<< "$headers" ||
+    fail "the CSP does not let the Web Analytics script load"
+fi
 echo "Smoke test passed: $base is $sha"

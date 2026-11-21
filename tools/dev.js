@@ -5,8 +5,9 @@ import { readFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { extname, join, normalize } from 'node:path';
 import { build } from './build.js';
+import { loadConfig } from './manifest.js';
 
-await build('dist', 'dev');
+await build('dist', 'dev', { ...loadConfig(), analytics: { token: '' } }); // no visit counting here
 const csp = readFileSync('dist/_headers', 'utf8').match(/Content-Security-Policy: (.*)/)[1];
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.woff2': 'font/woff2' };
 const port = Number(process.env.PORT ?? 8080);

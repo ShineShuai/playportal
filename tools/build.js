@@ -1,5 +1,6 @@
 // Builds dist/ from portal.config.json: the page (teasers; answers only sealed, hashed or encoded),
-// scripts, the enabled styles and their fonts. The config itself never ships.
+// scripts, the enabled styles and their fonts, the headers (the CSP follows analytics.token).
+// The config itself never ships.
 import { copyFile, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
@@ -7,6 +8,22 @@ import { createHash } from 'node:crypto';
 import { buildData } from './seal.js';
 import { active, loadConfig } from './manifest.js';
 import { loadStyles, registry, selectStyles, templates } from './styles.js';
+
+const BEACON = 'https://static.cloudflareinsights.com/beacon.min.js';
+const REPORT = 'https://cloudflareinsights.com';
+
+/**
+ * Cloudflare Web Analytics (a cookieless visit counter) installed by hand: the script tag and the
+ * CSP sources it needs. An empty token is off: no tag, and the CSP and the page stay as they were.
+ */
+export function analytics(token = '') {
+  if (!token) return { tag: '', script: '', connect: '' };
+  return {
+    tag: `<script type="module" src="${BEACON}" data-cf-beacon='{"token": "${token}"}'></script>`,
+    script: ` ${BEACON}`,
+    connect: `; connect-src ${REPORT}`,
+  };
+}
 
 const src = (f) => new URL(`../src/${f}`, import.meta.url);
 const cardId = (slug) => createHash('sha256').update(slug).digest('hex').slice(0, 8);
@@ -16,6 +33,7 @@ const bi = (o) => `<span lang="en">${esc(o.en)}</span><span lang="zh">${esc(o.zh
 export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev', config = loadConfig()) {
   const games = active(config.games);
   const styles = selectStyles(await loadStyles(), config.styles.enabled);
+  const wa = analytics(config.analytics?.token);
   const data = { ...(await buildData(games, cardId, config.puzzle.decoys)), rev: config.puzzle.revision };
   const teasers = games.map((g) => {
     const n = g.name.length;
@@ -35,14 +53,17 @@ export async function build(out = 'dist', sha = process.env.GITHUB_SHA ?? 'dev',
     .replace('{{FONTS}}', fontFiles.length ? '<link rel="stylesheet" href="/fonts.css">' : '')
     .replace('{{STYLES}}', () => JSON.stringify(registry(styles)).replaceAll('<', '\\u003c'))
     .replace('{{DECOR}}', () => templates(styles, games.length))
-    .replace('{{DATA}}', () => JSON.stringify(data).replaceAll('<', '\\u003c'));
+    .replace('{{DATA}}', () => JSON.stringify(data).replaceAll('<', '\\u003c'))
+    .replace('{{ANALYTICS}}', () => wa.tag);
 
   await rm(out, { recursive: true, force: true });
   await mkdir(out, { recursive: true });
   await writeFile(`${out}/index.html`, html);
-  for (const f of ['portal.js', 'match.js', 'lang.js', 'theme.js', 'style.js', '_headers']) {
+  for (const f of ['portal.js', 'match.js', 'lang.js', 'theme.js', 'style.js']) {
     await copyFile(src(f), `${out}/${f}`);
   }
+  await writeFile(`${out}/_headers`, (await readFile(src('_headers'), 'utf8'))
+    .replace('{{BEACON_SCRIPT}}', wa.script).replace('{{BEACON_CONNECT}}', wa.connect));
   const css = [await readFile(src('portal.css'), 'utf8'), ...styles.map((x) => `/* style: ${x.id} */\n${x.css}`)].join('\n');
   await writeFile(`${out}/portal.css`, css);
   if (fontFiles.length) {
